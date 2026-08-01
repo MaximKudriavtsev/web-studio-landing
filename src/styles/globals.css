@@ -1,19 +1,37 @@
 @import 'tailwindcss';
 
 @theme {
-  --font-display: 'Unbounded', sans-serif;
-  --font-sans: 'Manrope', sans-serif;
+  --font-sans: 'Manrope', ui-sans-serif, system-ui, sans-serif;
+  --font-display: 'Manrope', ui-sans-serif, system-ui, sans-serif;
 
-  --color-bg: #0b0f12;
-  --color-bg-elevated: #12181d;
-  --color-surface: #172027;
-  --color-border: #2a353d;
-  --color-text: #e8eef2;
-  --color-muted: #8a9aa6;
-  --color-accent: #2dd4bf;
-  --color-accent-soft: #14b8a6;
-  --color-accent-dim: color-mix(in srgb, #2dd4bf 16%, transparent);
-  --color-danger: #f87171;
+  /* Semantic palette (prompt tokens) */
+  --color-page-bg: #fbfbfd;
+  --color-surface: #ffffff;
+  --color-surface-soft: #f6f7fb;
+  --color-text-primary: #111827;
+  --color-text-secondary: #667085;
+  --color-border: rgba(92, 94, 122, 0.14);
+  --color-accent: #5b5cf0;
+  --color-accent-strong: #4b4ce3;
+  --color-accent-soft: #eef0ff;
+  --color-success: #22a06b;
+  --color-danger: #e5484d;
+
+  /* Aliases used by existing utility classes */
+  --color-bg: var(--color-page-bg);
+  --color-bg-elevated: var(--color-surface);
+  --color-text: var(--color-text-primary);
+  --color-muted: var(--color-text-secondary);
+  --color-accent-dim: color-mix(in srgb, var(--color-accent) 12%, transparent);
+
+  --shadow-sm: 0 10px 30px rgba(35, 38, 70, 0.06);
+  --shadow-md: 0 20px 60px rgba(35, 38, 70, 0.1);
+
+  --radius-sm: 12px;
+  --radius-md: 18px;
+  --radius-lg: 26px;
+
+  --container: 1200px;
 }
 
 @layer base {
@@ -45,8 +63,9 @@
     margin: 0;
     min-height: 100dvh;
     font-family: var(--font-sans);
-    background-color: var(--color-bg);
-    color: var(--color-text);
+    background-color: var(--color-page-bg);
+    color: var(--color-text-primary);
+    font-size: 1.0625rem;
     line-height: 1.6;
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
@@ -63,7 +82,8 @@
 
   button,
   input,
-  textarea {
+  textarea,
+  select {
     font: inherit;
   }
 
@@ -73,8 +93,8 @@
   }
 
   ::selection {
-    background: color-mix(in srgb, var(--color-accent) 35%, transparent);
-    color: var(--color-text);
+    background: color-mix(in srgb, var(--color-accent) 28%, transparent);
+    color: var(--color-text-primary);
   }
 }
 
@@ -88,24 +108,34 @@
   }
 
   .page-shell {
-    width: min(1120px, calc(100% - 2.5rem));
+    width: min(var(--container), calc(100% - 2.5rem));
     margin-inline: auto;
   }
 
-  .atmosphere {
+  .soft-glow {
     background:
-      radial-gradient(ellipse 80% 50% at 15% -10%, rgba(45, 212, 191, 0.14), transparent 55%),
-      radial-gradient(ellipse 60% 40% at 90% 10%, rgba(20, 184, 166, 0.08), transparent 50%),
-      linear-gradient(180deg, #0b0f12 0%, #0e1419 45%, #0b0f12 100%);
+      radial-gradient(ellipse 70% 45% at 12% -8%, rgba(91, 92, 240, 0.12), transparent 55%),
+      radial-gradient(ellipse 55% 40% at 92% 8%, rgba(91, 92, 240, 0.07), transparent 50%),
+      linear-gradient(180deg, #fbfbfd 0%, #f7f8fc 48%, #fbfbfd 100%);
   }
 
-  .grain::before {
-    content: '';
-    pointer-events: none;
-    position: fixed;
-    inset: 0;
-    z-index: 50;
-    opacity: 0.045;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  .shadow-card-sm {
+    box-shadow: var(--shadow-sm);
+  }
+
+  .shadow-card-md {
+    box-shadow: var(--shadow-md);
+  }
+
+  .rounded-card-sm {
+    border-radius: var(--radius-sm);
+  }
+
+  .rounded-card-md {
+    border-radius: var(--radius-md);
+  }
+
+  .rounded-card-lg {
+    border-radius: var(--radius-lg);
   }
 }

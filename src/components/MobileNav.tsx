@@ -1,7 +1,9 @@
-import { NavLink } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { createPortal } from 'react-dom'
+import { NavLink, useLocation } from 'react-router-dom'
 import { X } from 'lucide-react'
 import { motion, AnimatePresence, useReducedMotion } from 'motion/react'
-import { nav, site } from '../content/site'
+import { site } from '../content/site'
 import { Button } from './Button'
 
 type MobileNavProps = {
@@ -9,41 +11,56 @@ type MobileNavProps = {
   onClose: () => void
 }
 
+const isNavActive = (to: string, pathname: string, hash: string) => {
+  if (to === '/') return pathname === '/' && !hash
+  if (to.startsWith('/#')) {
+    return pathname === '/' && hash === to.slice(1)
+  }
+  return pathname === to || pathname.startsWith(`${to}/`)
+}
+
 export const MobileNav = ({ isOpen, onClose }: MobileNavProps) => {
   const prefersReducedMotion = useReducedMotion()
+  const location = useLocation()
+  const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null)
 
-  return (
+  useEffect(() => {
+    setPortalTarget(document.body)
+  }, [])
+
+  if (!portalTarget) return null
+
+  return createPortal(
     <AnimatePresence>
       {isOpen ? (
-        <motion.div
-          className="fixed inset-0 z-40 md:hidden"
-          initial={prefersReducedMotion ? false : { opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={prefersReducedMotion ? undefined : { opacity: 0 }}
-          transition={{ duration: 0.2 }}
-        >
-          <button
+        <div className="fixed inset-0 z-50 lg:hidden">
+          <motion.button
             type="button"
             aria-label="Закрыть меню"
-            className="absolute inset-0 bg-bg/80 backdrop-blur-sm"
+            className="absolute inset-0 bg-text/40 backdrop-blur-sm"
             onClick={onClose}
+            initial={prefersReducedMotion ? false : { opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={prefersReducedMotion ? undefined : { opacity: 0 }}
+            transition={{ duration: 0.2 }}
           />
           <motion.nav
+            id="mobile-nav"
             aria-label="Мобильная навигация"
-            className="absolute inset-y-0 right-0 flex w-[min(100%,20rem)] flex-col border-l border-border bg-bg-elevated p-6 shadow-2xl"
+            className="absolute inset-y-0 right-0 flex w-[min(100%,20rem)] flex-col border-l border-border bg-white p-6 text-text shadow-card-md"
             initial={prefersReducedMotion ? false : { x: '100%' }}
             animate={{ x: 0 }}
             exit={prefersReducedMotion ? undefined : { x: '100%' }}
             transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
           >
             <div className="mb-10 flex items-center justify-between">
-              <span className="font-display text-lg font-semibold tracking-tight">
-                {site.brand}
+              <span className="text-lg font-semibold tracking-tight text-text">
+                {site.brand.name}
               </span>
               <button
                 type="button"
                 aria-label="Закрыть меню"
-                className="rounded-md p-2 text-muted transition-colors hover:bg-surface hover:text-text"
+                className="rounded-md p-2 text-muted transition-colors hover:bg-surface-soft hover:text-text"
                 onClick={onClose}
               >
                 <X size={22} />
@@ -51,24 +68,25 @@ export const MobileNav = ({ isOpen, onClose }: MobileNavProps) => {
             </div>
 
             <ul className="flex flex-col gap-1">
-              {nav.map((item) => (
-                <li key={item.to}>
-                  <NavLink
-                    to={item.to}
-                    onClick={onClose}
-                    className={({ isActive }) =>
-                      [
+              {site.navigation.map((item) => {
+                const active = isNavActive(item.to, location.pathname, location.hash)
+                return (
+                  <li key={item.to}>
+                    <NavLink
+                      to={item.to}
+                      onClick={onClose}
+                      className={[
                         'block rounded-md px-3 py-3 text-base font-medium transition-colors',
-                        isActive
-                          ? 'bg-accent-dim text-accent'
-                          : 'text-text hover:bg-surface',
-                      ].join(' ')
-                    }
-                  >
-                    {item.label}
-                  </NavLink>
-                </li>
-              ))}
+                        active
+                          ? 'bg-accent-soft text-accent'
+                          : 'text-text hover:bg-surface-soft',
+                      ].join(' ')}
+                    >
+                      {item.label}
+                    </NavLink>
+                  </li>
+                )
+              })}
             </ul>
 
             <div className="mt-auto pt-8">
@@ -77,8 +95,9 @@ export const MobileNav = ({ isOpen, onClose }: MobileNavProps) => {
               </Button>
             </div>
           </motion.nav>
-        </motion.div>
+        </div>
       ) : null}
-    </AnimatePresence>
+    </AnimatePresence>,
+    portalTarget,
   )
 }
