@@ -1,1 +1,0 @@
-import{l as e,t}from"./index-CayAZTok.js";import{n}from"./usePageSeo-B678AIWZ.js";var r=e(),i=({children:e,id:i,className:a=``,containerClassName:o=``,reveal:s=!0})=>{let c=(0,r.jsx)(t,{className:o,children:e});return(0,r.jsx)(`section`,{id:i,className:[`py-16 md:py-20`,a].filter(Boolean).join(` `),children:s?(0,r.jsx)(n,{children:c}):c})};export{i as t};
