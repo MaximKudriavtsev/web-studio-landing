@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://MaximKudriavtsev.github.io/web-studio-landing/web-studio-landing/sitemap.xml
