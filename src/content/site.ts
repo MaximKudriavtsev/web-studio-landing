@@ -6,6 +6,10 @@ export const site = {
   email: 'hello@sever.studio',
   phone: '+7 (999) 000-00-00',
   city: 'Москва',
+  /** Apple Smart App Banner — app-id must match meta in index.html */
+  iosAppId: '6775266972',
+  iosAppStoreUrl:
+    'https://apps.apple.com/ru/app/%D0%BF%D0%B5%D1%80%D0%B2%D1%8B%D0%B9-%D0%BB%D0%B5%D0%BF%D0%B5%D1%82-%D0%B4%D0%BD%D0%B5%D0%B2%D0%BD%D0%B8%D0%BA-%D1%80%D0%B5%D1%87%D0%B8/id6775266972',
   socials: [
     { label: 'Telegram', href: 'https://t.me/' },
     { label: 'VK', href: 'https://vk.com/' },
