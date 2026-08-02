@@ -1,32 +1,44 @@
-import { motion, useReducedMotion } from 'motion/react'
-import type { ReactNode } from 'react'
+import { useEffect, useRef, type ReactNode } from 'react'
 
 type SectionRevealProps = {
   children: ReactNode
   className?: string
-  delay?: number
+  delay?: boolean
 }
 
-export const SectionReveal = ({
-  children,
-  className = '',
-  delay = 0,
-}: SectionRevealProps) => {
-  const prefersReducedMotion = useReducedMotion()
+export const SectionReveal = ({ children, className = '', delay = false }: SectionRevealProps) => {
+  const ref = useRef<HTMLDivElement>(null)
 
-  if (prefersReducedMotion) {
-    return <div className={className}>{children}</div>
-  }
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+
+    if (!('IntersectionObserver' in window)) {
+      el.classList.add('is-visible')
+      return
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (!entry.isIntersecting) continue
+          entry.target.classList.add('is-visible')
+          observer.unobserve(entry.target)
+        }
+      },
+      { threshold: 0.12, rootMargin: '0px 0px -40px' },
+    )
+
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [])
 
   return (
-    <motion.div
-      className={className}
-      initial={{ opacity: 0, y: 28 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, amount: 0.2 }}
-      transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1], delay }}
+    <div
+      ref={ref}
+      className={['reveal', delay ? 'delay-1' : '', className].filter(Boolean).join(' ')}
     >
       {children}
-    </motion.div>
+    </div>
   )
 }

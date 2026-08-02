@@ -36,12 +36,18 @@ const buildCanonical = (path: string) => {
   return absolutePath || '/'
 }
 
+type UsePageSeoOptions = {
+  noIndex?: boolean
+}
+
 /** Sets document title and meta/OG tags for the current page. */
-export const usePageSeo = (seo: SeoPage, path: string) => {
+export const usePageSeo = (seo: SeoPage, path: string, options: UsePageSeoOptions = {}) => {
+  const { noIndex = false } = options
+
   useEffect(() => {
     document.title = seo.title
     upsertMeta('name', 'description', seo.description)
-    upsertMeta('name', 'robots', 'index, follow')
+    upsertMeta('name', 'robots', noIndex ? 'noindex' : 'index, follow')
     upsertMeta('property', 'og:title', seo.title)
     upsertMeta('property', 'og:description', seo.description)
     upsertMeta('property', 'og:type', 'website')
@@ -54,5 +60,5 @@ export const usePageSeo = (seo: SeoPage, path: string) => {
     if (SITE_URL) {
       upsertMeta('property', 'og:image', `${SITE_URL}${BASE}favicon.svg`)
     }
-  }, [seo.title, seo.description, path])
+  }, [seo.title, seo.description, path, noIndex])
 }

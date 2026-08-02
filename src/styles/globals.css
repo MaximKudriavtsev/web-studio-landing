@@ -1,141 +1,50 @@
 @import 'tailwindcss';
+@import './kotdela.css';
 
 @theme {
-  --font-sans: 'Manrope', ui-sans-serif, system-ui, sans-serif;
-  --font-display: 'Manrope', ui-sans-serif, system-ui, sans-serif;
+  --font-sans: 'Manrope', Arial, sans-serif;
+  --font-display: 'Playfair Display', Georgia, serif;
 
-  /* Semantic palette (prompt tokens) */
-  --color-page-bg: #fbfbfd;
+  --color-page-bg: #f4f0e8;
   --color-surface: #ffffff;
-  --color-surface-soft: #f6f7fb;
-  --color-text-primary: #111827;
-  --color-text-secondary: #667085;
-  --color-border: rgba(92, 94, 122, 0.14);
-  --color-accent: #5b5cf0;
-  --color-accent-strong: #4b4ce3;
-  --color-accent-soft: #eef0ff;
-  --color-success: #22a06b;
-  --color-danger: #e5484d;
+  --color-surface-soft: #ebe5da;
+  --color-text-primary: #121212;
+  --color-text-secondary: #67645e;
+  --color-border: rgba(18, 18, 18, 0.16);
+  --color-accent: #c9ff55;
+  --color-accent-strong: #b5e64a;
+  --color-accent-soft: #e8f7b8;
+  --color-success: #2f9d47;
+  --color-danger: #ff8c6b;
 
-  /* Aliases used by existing utility classes */
   --color-bg: var(--color-page-bg);
   --color-bg-elevated: var(--color-surface);
   --color-text: var(--color-text-primary);
   --color-muted: var(--color-text-secondary);
   --color-accent-dim: color-mix(in srgb, var(--color-accent) 12%, transparent);
 
-  --shadow-sm: 0 10px 30px rgba(35, 38, 70, 0.06);
-  --shadow-md: 0 20px 60px rgba(35, 38, 70, 0.1);
+  --shadow-sm: 0 12px 24px rgba(18, 18, 18, 0.08);
+  --shadow-md: 0 32px 80px rgba(24, 20, 16, 0.14);
 
   --radius-sm: 12px;
-  --radius-md: 18px;
-  --radius-lg: 26px;
+  --radius-md: 28px;
+  --radius-lg: 38px;
 
-  --container: 1200px;
+  --container: 1340px;
 }
 
 @layer base {
-  *,
-  *::before,
-  *::after {
-    box-sizing: border-box;
-  }
-
-  html {
-    scroll-behavior: smooth;
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    html {
-      scroll-behavior: auto;
-    }
-
-    *,
-    *::before,
-    *::after {
-      animation-duration: 0.01ms !important;
-      animation-iteration-count: 1 !important;
-      transition-duration: 0.01ms !important;
-    }
-  }
-
-  body {
-    margin: 0;
-    min-height: 100dvh;
-    font-family: var(--font-sans);
-    background-color: var(--color-page-bg);
-    color: var(--color-text-primary);
-    font-size: 1.0625rem;
-    line-height: 1.6;
-    -webkit-font-smoothing: antialiased;
-    text-rendering: optimizeLegibility;
-  }
-
   #root {
     min-height: 100dvh;
   }
 
-  a {
-    color: inherit;
-    text-decoration: none;
-  }
-
-  button,
-  input,
-  textarea,
-  select {
-    font: inherit;
-  }
-
   :focus-visible {
-    outline: 2px solid var(--color-accent);
+    outline: 2px solid var(--lime, #c9ff55);
     outline-offset: 3px;
   }
 
   ::selection {
-    background: color-mix(in srgb, var(--color-accent) 28%, transparent);
-    color: var(--color-text-primary);
-  }
-}
-
-@layer utilities {
-  .font-display {
-    font-family: var(--font-display);
-  }
-
-  .text-balance {
-    text-wrap: balance;
-  }
-
-  .page-shell {
-    width: min(var(--container), calc(100% - 2.5rem));
-    margin-inline: auto;
-  }
-
-  .soft-glow {
-    background:
-      radial-gradient(ellipse 70% 45% at 12% -8%, rgba(91, 92, 240, 0.12), transparent 55%),
-      radial-gradient(ellipse 55% 40% at 92% 8%, rgba(91, 92, 240, 0.07), transparent 50%),
-      linear-gradient(180deg, #fbfbfd 0%, #f7f8fc 48%, #fbfbfd 100%);
-  }
-
-  .shadow-card-sm {
-    box-shadow: var(--shadow-sm);
-  }
-
-  .shadow-card-md {
-    box-shadow: var(--shadow-md);
-  }
-
-  .rounded-card-sm {
-    border-radius: var(--radius-sm);
-  }
-
-  .rounded-card-md {
-    border-radius: var(--radius-md);
-  }
-
-  .rounded-card-lg {
-    border-radius: var(--radius-lg);
+    background: color-mix(in srgb, #c9ff55 40%, transparent);
+    color: #121212;
   }
 }

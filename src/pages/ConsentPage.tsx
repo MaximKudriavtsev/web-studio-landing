@@ -3,9 +3,9 @@ import { BrandMark } from '../components/BrandMark'
 import { site } from '../content/site'
 import { usePageSeo } from '../hooks/usePageSeo'
 
-export const PrivacyPage = () => {
-  const doc = site.legal.privacy
-  usePageSeo(site.seo.privacy, '/privacy', { noIndex: true })
+export const ConsentPage = () => {
+  const doc = site.legal.consent
+  usePageSeo(site.seo.consent, '/consent', { noIndex: true })
 
   return (
     <div className="legal-page">
@@ -25,6 +25,11 @@ export const PrivacyPage = () => {
             <strong>Перед публикацией:</strong> {doc.warning.replace(/^Перед публикацией:\s*/i, '')}
           </p>
           <div dangerouslySetInnerHTML={{ __html: doc.html }} />
+          <p>
+            Пользователь подтверждает, что ознакомился с{' '}
+            <Link to="/privacy">политикой конфиденциальности</Link> и понимает условия обработки
+            данных.
+          </p>
           <p className="legal-date">
             {doc.dateLabel} <mark>{doc.dateValue}</mark>
           </p>
@@ -35,7 +40,7 @@ export const PrivacyPage = () => {
           <span>
             © {new Date().getFullYear()} {site.brand.name}
           </span>
-          <Link to="/consent">Согласие на обработку данных</Link>
+          <Link to="/privacy">Политика конфиденциальности</Link>
         </div>
       </footer>
     </div>

@@ -15,7 +15,7 @@ const base = rawBase.endsWith('/') ? rawBase : `${rawBase}/`
 const origin = siteUrl || 'https://example.com'
 const root = `${origin}${base === '/' ? '/' : base}`
 
-const paths = ['', 'services', 'work', 'contact', 'privacy', 'personal-data']
+const paths = ['', 'privacy', 'consent']
 
 const sitemapUrls = paths
   .map((path) => {

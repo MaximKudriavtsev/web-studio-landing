@@ -1,264 +1,587 @@
-import { motion, useReducedMotion } from 'motion/react'
-import { Check } from 'lucide-react'
-import { Button } from '../components/Button'
+import { type FormEvent, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { SectionReveal } from '../components/SectionReveal'
-import { Container } from '../components/layout/Container'
-import { Section } from '../components/layout/Section'
-import { CaseCard } from '../components/ui/CaseCard'
-import { FeatureCard } from '../components/ui/FeatureCard'
-import { GradientCta } from '../components/ui/GradientCta'
-import { IconBadge } from '../components/ui/IconBadge'
-import { SectionHeading } from '../components/ui/SectionHeading'
-import { ServiceCard } from '../components/ui/ServiceCard'
-import { StepCard } from '../components/ui/StepCard'
-import { HeroDevices } from '../components/illustrations/HeroDevices'
 import { site } from '../content/site'
-import type { IconKey } from '../content/types'
+import type { CaseCard, ServiceCard } from '../content/types'
 import { usePageSeo } from '../hooks/usePageSeo'
 
-const heroAdvantageIcons: IconKey[] = ['palette', 'smartphone', 'plug', 'life-buoy']
+const serviceClass = (variant: ServiceCard['variant']) => {
+  if (variant === 'featured') return 'service-card service-featured'
+  if (variant === 'coral') return 'service-card service-coral'
+  if (variant === 'ink') return 'service-card service-ink'
+  return 'service-card service-blue'
+}
 
-export const HomePage = () => {
-  const prefersReducedMotion = useReducedMotion()
-  const { home, services, yandexKit, cases, process, team, seo } = site
-  usePageSeo(seo.home, '/')
+const caseClass = (variant: CaseCard['variant']) => `case case-${variant}`
 
-  const fadeUp = (delay: number) =>
-    prefersReducedMotion
-      ? {}
-      : {
-          initial: { opacity: 0, y: 24 },
-          animate: { opacity: 1, y: 0 },
-          transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] as const, delay },
-        }
+const ServiceArt = ({ art }: { art: ServiceCard['art'] }) => {
+  if (art === 'browser') {
+    return (
+      <div className="service-art browser-art" aria-hidden="true">
+        <div className="art-window">
+          <span />
+          <strong>
+            Ваш продукт
+            <br />
+            на своём сайте
+          </strong>
+          <i />
+          <i />
+        </div>
+      </div>
+    )
+  }
+
+  if (art === 'phone') {
+    return (
+      <div className="service-art phone-art" aria-hidden="true">
+        <div className="phone">
+          <div className="phone-screen">
+            <i />
+            <strong>
+              Удобно
+              <br />
+              с первого
+              <br />
+              касания
+            </strong>
+            <span />
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (art === 'type') {
+    return (
+      <div className="service-art type-art" aria-hidden="true">
+        <small>Aa</small>
+        <strong>
+          Система,
+          <br />
+          а не набор
+          <br />
+          случайностей
+        </strong>
+      </div>
+    )
+  }
 
   return (
-    <>
-      {/* Hero + Яндекс КИТ — одна композиция первого экрана */}
-      <section className="relative overflow-hidden">
-        <div
-          aria-hidden
-          className="pointer-events-none absolute -right-16 top-4 h-[22rem] w-[22rem] rounded-full opacity-55 blur-3xl md:top-10 md:h-[24rem] md:w-[24rem]"
-          style={{
-            background:
-              'radial-gradient(circle, rgba(91,92,240,0.24) 0%, transparent 70%)',
-          }}
-        />
+    <div className="service-art speed-art" aria-hidden="true">
+      <div className="speed-ring">
+        <b>98</b>
+        <small>скорость</small>
+      </div>
+      <span />
+      <span />
+    </div>
+  )
+}
 
-        <Container className="relative pt-10 pb-8 md:pt-12 md:pb-10">
-          <div className="grid items-center gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:gap-8 xl:gap-10">
-            <div className="min-w-0">
-              <motion.h1
-                className="max-w-xl text-balance text-3xl font-semibold tracking-tight text-text sm:text-4xl lg:text-[2.65rem] lg:leading-[1.18]"
-                {...fadeUp(0)}
-              >
-                {home.hero.headline}
-              </motion.h1>
-
-              <motion.p
-                className="mt-4 max-w-md text-[0.95rem] leading-relaxed text-muted md:mt-5 md:text-base"
-                {...fadeUp(0.1)}
-              >
-                {home.hero.support}
-              </motion.p>
-
-              <motion.div
-                className="mt-6 flex flex-col gap-3 sm:mt-7 sm:flex-row sm:items-center sm:gap-3.5"
-                {...fadeUp(0.2)}
-              >
-                <Button to={home.hero.primaryCta.to}>{home.hero.primaryCta.label}</Button>
-                <Button to={home.hero.secondaryCta.to} variant="secondary">
-                  {home.hero.secondaryCta.label}
-                </Button>
-              </motion.div>
-
-              <motion.ul
-                className="mt-8 grid grid-cols-1 gap-x-5 gap-y-3 xs:grid-cols-2 sm:mt-9 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4"
-                {...fadeUp(0.3)}
-              >
-                {home.hero.advantages.map((label, index) => (
-                  <li
-                    key={label}
-                    className="grid min-w-0 grid-cols-[2rem_minmax(0,1fr)] items-center gap-2"
-                  >
-                    <IconBadge
-                      icon={heroAdvantageIcons[index] ?? 'sparkles'}
-                      className="size-8 rounded-lg"
-                      size={15}
-                    />
-                    <span className="text-[0.8125rem] font-medium leading-[1.3] text-text/90">
-                      {label}
-                    </span>
-                  </li>
-                ))}
-              </motion.ul>
-            </div>
-
-            <motion.div className="min-w-0 w-full" {...fadeUp(0.15)}>
-              <HeroDevices className="w-full max-w-none" />
-            </motion.div>
+const CaseVisual = ({ visual }: { visual: CaseCard['visual'] }) => {
+  if (visual === 'shop') {
+    return (
+      <div className="case-visual shop-visual" aria-label="Макет интернет-магазина">
+        <div className="shop-browser">
+          <div className="shop-bar">
+            <i />
+            <i />
+            <i />
+            <span>svet-71.ru</span>
           </div>
+          <div className="shop-nav">
+            <b>СВЕТ</b>
+            <span>Каталог　Комнаты　Новинки</span>
+            <button type="button">Корзина</button>
+          </div>
+          <div className="shop-hero">
+            <div>
+              <small>НОВАЯ КОЛЛЕКЦИЯ</small>
+              <strong>
+                Свет, который
+                <br />
+                создаёт атмосферу
+              </strong>
+              <i />
+            </div>
+            <div className="lamp">
+              <span />
+              <b />
+              <i />
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
-          <SectionReveal className="mt-8 md:mt-10">
-            <div className="rounded-card-lg border border-border bg-surface p-5 shadow-card-sm sm:p-6 md:p-7">
-              <div className="grid gap-6 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.2fr)] lg:items-center lg:gap-8">
-                <div className="min-w-0">
-                  <IconBadge
-                    icon="store"
-                    className="size-12 rounded-[0.85rem] bg-accent text-white"
-                    size={22}
-                  />
-                  <h2 className="mt-3.5 text-balance text-xl font-semibold tracking-tight text-text md:text-[1.35rem] md:leading-snug">
-                    {yandexKit.title}
-                  </h2>
-                  <p className="mt-2.5 max-w-md text-sm leading-relaxed text-muted md:text-[0.95rem]">
-                    {yandexKit.description}
-                  </p>
-                </div>
-
-                <ul className="grid gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
-                  {yandexKit.features.map((feature) => (
-                    <li key={feature.title}>
-                      <FeatureCard
-                        title={feature.title}
-                        icon={feature.icon}
-                        className="h-full items-center gap-2.5 p-3 shadow-none"
-                      />
-                    </li>
-                  ))}
-                </ul>
+  if (visual === 'erp') {
+    return (
+      <div className="case-visual erp-visual" aria-label="Макет ERP-системы">
+        <div className="erp-window">
+          <aside>
+            <b>К</b>
+            <i />
+            <i className="on" />
+            <i />
+            <i />
+          </aside>
+          <div className="erp-body">
+            <div className="erp-head">
+              <span>
+                <small>Добрый день</small>
+                <strong>Финансы</strong>
+              </span>
+              <button type="button">Синхронизировать</button>
+            </div>
+            <div className="erp-cards">
+              <div>
+                <small>Выручка</small>
+                <strong>1 248 400 ₽</strong>
+                <i>+12,4%</i>
+              </div>
+              <div>
+                <small>Чистая прибыль</small>
+                <strong>386 120 ₽</strong>
+                <i>+8,1%</i>
               </div>
             </div>
+            <div className="erp-chart">
+              <span />
+              <span />
+              <span />
+              <span />
+              <span />
+              <span />
+              <span />
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="case-visual owl-visual" aria-label="Концепция детского продукта">
+      <div className="owl-card">
+        <div className="owl">
+          <i className="ear e1" />
+          <i className="ear e2" />
+          <b className="eye x1" />
+          <b className="eye x2" />
+          <span />
+        </div>
+        <strong>Первый лепет</strong>
+        <small>маленькие шаги к большим словам</small>
+        <div className="owl-pills">
+          <i />
+          <i />
+          <i />
+        </div>
+      </div>
+    </div>
+  )
+}
+
+const ContactForm = () => {
+  const formCopy = site.home.contact.form
+  const [hasError, setHasError] = useState(false)
+  const [status, setStatus] = useState(formCopy.statusIdle)
+
+  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    const form = event.currentTarget
+    const data = new FormData(form)
+    const name = String(data.get('name') || '').trim()
+    const contact = String(data.get('contact') || '').trim()
+    const message = String(data.get('message') || '').trim()
+    const consent = data.get('consent')
+
+    if (!name || !contact || !message || !consent) {
+      setHasError(true)
+      setStatus(formCopy.statusError)
+      return
+    }
+
+    setHasError(false)
+    setStatus(formCopy.statusSuccess)
+    const subject = encodeURIComponent(`Новая заявка с сайта — ${name}`)
+    const body = encodeURIComponent(`Имя: ${name}\nКонтакт: ${contact}\n\nЗадача:\n${message}`)
+    window.location.href = `mailto:${site.contacts.email}?subject=${subject}&body=${body}`
+  }
+
+  return (
+    <form
+      className={['contact-form', hasError ? 'has-error' : ''].filter(Boolean).join(' ')}
+      onSubmit={handleSubmit}
+      noValidate
+    >
+      <label>
+        <span>{formCopy.nameLabel}</span>
+        <input type="text" name="name" autoComplete="name" placeholder={formCopy.namePlaceholder} required />
+      </label>
+      <label>
+        <span>{formCopy.contactLabel}</span>
+        <input
+          type="text"
+          name="contact"
+          autoComplete="email"
+          placeholder={formCopy.contactPlaceholder}
+          required
+        />
+      </label>
+      <label className="full">
+        <span>{formCopy.messageLabel}</span>
+        <textarea name="message" rows={5} placeholder={formCopy.messagePlaceholder} required />
+      </label>
+      <label className="consent full">
+        <input type="checkbox" name="consent" required />
+        <span>
+          {formCopy.consentBefore}
+          <Link to="/consent">{formCopy.consentLink}</Link>
+          {formCopy.and}
+          <Link to="/privacy">{formCopy.privacyLink}</Link>
+          {formCopy.consentAfter}
+        </span>
+      </label>
+      <div className="form-footer full">
+        <button className="button button-lime" type="submit">
+          {formCopy.submit} <span>↗</span>
+        </button>
+        <small>{status}</small>
+      </div>
+    </form>
+  )
+}
+
+export const HomePage = () => {
+  const { home, services, cases, process, team, contacts } = site
+  usePageSeo(site.seo.home, '/')
+
+  return (
+    <main id="main">
+      <section className="hero section" id="top">
+        <div className="shell hero-grid">
+          <SectionReveal className="hero-copy">
+            <div className="eyebrow">
+              <span /> {home.hero.eyebrow}
+            </div>
+            <h1>
+              {home.hero.headline}
+              <br />
+              <em>{home.hero.headlineEm}</em>
+            </h1>
+            <p className="hero-lead">{home.hero.lead}</p>
+            <div className="hero-actions">
+              <Link className="button button-lime" to={home.hero.primaryCta.to}>
+                {home.hero.primaryCta.label} <span>↗</span>
+              </Link>
+              <Link className="text-link" to={home.hero.secondaryCta.to}>
+                {home.hero.secondaryCta.label} <span>↓</span>
+              </Link>
+            </div>
+            <div className="hero-meta">
+              {home.hero.meta.map((item) => (
+                <div key={item.number}>
+                  <strong>{item.number}</strong>
+                  <span>
+                    {item.text.split('\n').map((line, index) => (
+                      <span key={line}>
+                        {index > 0 ? <br /> : null}
+                        {line}
+                      </span>
+                    ))}
+                  </span>
+                </div>
+              ))}
+            </div>
           </SectionReveal>
-        </Container>
+
+          <SectionReveal className="hero-stage" delay>
+            <div className="stage-orbit orbit-one" />
+            <div className="stage-orbit orbit-two" />
+            <div className="floating-note note-one">UX / UI</div>
+            <div className="floating-note note-two">Запуск ↗</div>
+            <article className="product-window" aria-label="Пример цифрового продукта">
+              <div className="window-top">
+                <span className="window-dots">
+                  <i />
+                  <i />
+                  <i />
+                </span>
+                <span>dashboard.kotdela</span>
+                <span className="live-dot">online</span>
+              </div>
+              <div className="window-body">
+                <aside className="mock-sidebar">
+                  <div className="mock-logo">К</div>
+                  <i className="active" />
+                  <i />
+                  <i />
+                  <i />
+                </aside>
+                <div className="mock-content">
+                  <div className="mock-head">
+                    <div>
+                      <small>Обзор проекта</small>
+                      <strong>Всё под контролем</strong>
+                    </div>
+                    <button type="button" aria-label="Добавить">
+                      +
+                    </button>
+                  </div>
+                  <div className="metric-row">
+                    <div className="metric metric-primary">
+                      <span>Заявки</span>
+                      <strong>128</strong>
+                      <small>↗ в этом месяце</small>
+                    </div>
+                    <div className="metric">
+                      <span>Конверсия</span>
+                      <strong>4,8%</strong>
+                      <small>стабильный рост</small>
+                    </div>
+                  </div>
+                  <div className="chart-card">
+                    <div className="chart-head">
+                      <span>Динамика</span>
+                      <small>30 дней</small>
+                    </div>
+                    <svg viewBox="0 0 520 170" role="img" aria-label="График роста">
+                      <defs>
+                        <linearGradient id="fill" x1="0" x2="0" y1="0" y2="1">
+                          <stop offset="0" stopColor="#c9ff55" stopOpacity=".55" />
+                          <stop offset="1" stopColor="#c9ff55" stopOpacity="0" />
+                        </linearGradient>
+                      </defs>
+                      <path className="grid-line" d="M0 35H520M0 85H520M0 135H520" />
+                      <path
+                        className="area"
+                        d="M0 145 C50 139 63 112 106 120 S177 109 212 92 S272 115 310 75 S374 79 410 49 S476 65 520 18 L520 170H0Z"
+                      />
+                      <path
+                        className="line"
+                        d="M0 145 C50 139 63 112 106 120 S177 109 212 92 S272 115 310 75 S374 79 410 49 S476 65 520 18"
+                      />
+                    </svg>
+                  </div>
+                  <div className="task-row">
+                    <span>
+                      <i /> Прототип согласован
+                    </span>
+                    <span>Сегодня</span>
+                  </div>
+                </div>
+              </div>
+            </article>
+          </SectionReveal>
+        </div>
+
+        <SectionReveal className="shell trust-strip">
+          <span>{home.hero.trustLabel}</span>
+          {home.hero.trustItems.map((item, index) => (
+            <span key={item} style={{ display: 'contents' }}>
+              <strong>{item}</strong>
+              {index < home.hero.trustItems.length - 1 ? <i>●</i> : null}
+            </span>
+          ))}
+        </SectionReveal>
       </section>
 
-      {/* Услуги */}
-      <Section reveal={false}>
-        <SectionReveal>
-          <SectionHeading
-            title={home.servicesTitle}
-            text={home.servicesText}
-            link={home.servicesAllLink}
-          />
-        </SectionReveal>
-
-        <ul className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
-          {services.map((service, index) => (
-            <li key={service.id} className="h-full">
-              <SectionReveal delay={index * 0.05} className="h-full">
-                <ServiceCard service={service} />
-              </SectionReveal>
-            </li>
-          ))}
-        </ul>
-      </Section>
-
-      {/* Кейсы */}
-      <Section className="bg-surface-soft/70" reveal={false}>
-        <SectionReveal>
-          <SectionHeading
-            title={home.casesTitle}
-            text={home.casesText}
-            link={home.casesAllLink}
-          />
-        </SectionReveal>
-
-        <ul className="grid gap-5 md:grid-cols-3">
-          {cases.map((item, index) => (
-            <li key={item.id} className="h-full">
-              <SectionReveal delay={index * 0.06} className="h-full">
-                <CaseCard item={item} compact />
-              </SectionReveal>
-            </li>
-          ))}
-        </ul>
-      </Section>
-
-      {/* Процесс */}
-      <Section id="process" reveal={false}>
-        <SectionReveal>
-          <SectionHeading title={home.processTitle} />
-        </SectionReveal>
-
-        <div className="relative">
-          <div
-            aria-hidden
-            className="pointer-events-none absolute left-0 right-0 top-3 hidden h-px border-t border-dashed border-accent/35 lg:block"
-          />
-          <ol className="grid gap-8 md:grid-cols-2 lg:grid-cols-4 lg:gap-6">
-            {process.map((step, index) => (
-              <li key={step.number} className="relative">
-                <span
-                  aria-hidden
-                  className="absolute left-0 top-2.5 hidden size-2 -translate-y-1/2 rounded-full bg-accent lg:block"
-                />
-                <SectionReveal delay={index * 0.06}>
-                  <StepCard
-                    number={step.number}
-                    title={step.title}
-                    text={step.text}
-                    className="lg:pt-4"
-                  />
-                </SectionReveal>
-              </li>
-            ))}
-          </ol>
-        </div>
-      </Section>
-
-      {/* Команда */}
-      <Section className="bg-surface-soft/70" reveal={false}>
-        <SectionReveal>
-          <div className="grid gap-10 lg:grid-cols-[1fr_1.2fr_0.9fr] lg:items-start">
+      <section className="section services" id="services">
+        <div className="shell">
+          <SectionReveal className="section-heading">
             <div>
-              <h2 className="text-balance text-2xl font-semibold tracking-tight text-text md:text-3xl">
-                {home.teamTitle}
-              </h2>
-              <p className="mt-4 text-muted">{home.teamText}</p>
+              <span className="section-number">{home.servicesHeading.number}</span>
+              <span className="eyebrow eyebrow-dark">{home.servicesHeading.eyebrow}</span>
             </div>
+            <h2>
+              {home.servicesHeading.title}
+              <br />
+              <em>{home.servicesHeading.titleEm}</em>
+            </h2>
+            <p>{home.servicesHeading.text}</p>
+          </SectionReveal>
 
-            <ul className="grid grid-cols-2 gap-5 sm:grid-cols-4 lg:grid-cols-2 xl:grid-cols-4">
-              {team.map((member) => (
-                <li key={member.id} className="text-center">
-                  {member.photo ? (
-                    <img
-                      src={member.photo}
-                      alt=""
-                      className="mx-auto size-16 rounded-full object-cover ring-2 ring-border"
-                    />
-                  ) : (
-                    <span
-                      className="mx-auto flex size-16 items-center justify-center rounded-full bg-accent-soft text-sm font-semibold text-accent ring-2 ring-border"
-                      aria-hidden
-                    >
-                      {member.initials}
-                    </span>
-                  )}
-                  <p className="mt-3 text-sm font-semibold tracking-tight text-text">
-                    {member.name}
-                  </p>
-                  <p className="mt-1 text-xs text-muted">{member.role}</p>
-                </li>
-              ))}
-            </ul>
-
-            <ul className="flex flex-col gap-3">
-              {home.teamAdvantages.map((item) => (
-                <li
-                  key={item}
-                  className="flex items-start gap-2.5 rounded-card-md border border-border bg-surface px-4 py-3 text-sm text-text shadow-card-sm"
-                >
-                  <Check size={16} className="mt-0.5 shrink-0 text-accent" aria-hidden />
-                  <span>{item}</span>
-                </li>
-              ))}
-            </ul>
+          <div className="services-grid">
+            {services.map((service, index) => (
+              <SectionReveal
+                key={service.id}
+                className={serviceClass(service.variant)}
+                delay={index % 2 === 1}
+              >
+                <div className="service-top">
+                  <span>{service.number}</span>
+                  <span className="service-icon">{service.icon}</span>
+                </div>
+                <ServiceArt art={service.art} />
+                <div className="service-bottom">
+                  <h3>{service.title}</h3>
+                  <p>{service.text}</p>
+                  <ul>
+                    {service.features.map((feature) => (
+                      <li key={feature}>{feature}</li>
+                    ))}
+                  </ul>
+                </div>
+              </SectionReveal>
+            ))}
           </div>
-        </SectionReveal>
-      </Section>
+        </div>
+      </section>
 
-      <GradientCta title={home.ctaTitle} text={home.ctaText} button={home.ctaButton} />
-    </>
+      <section className="section work" id="work">
+        <div className="shell">
+          <SectionReveal className="section-heading heading-light">
+            <div>
+              <span className="section-number">{home.workHeading.number}</span>
+              <span className="eyebrow">{home.workHeading.eyebrow}</span>
+            </div>
+            <h2>
+              {home.workHeading.title}
+              <br />
+              <em>{home.workHeading.titleEm}</em>
+            </h2>
+            <p>{home.workHeading.text}</p>
+          </SectionReveal>
+
+          <div className="case-list">
+            {cases.map((item) => (
+              <SectionReveal key={item.id} className={caseClass(item.variant)}>
+                <div className="case-copy">
+                  <div className="case-tags">
+                    {item.tags.map((tag) => (
+                      <span key={tag}>{tag}</span>
+                    ))}
+                  </div>
+                  <h3>{item.title}</h3>
+                  <p>{item.text}</p>
+                  <Link to={item.cta.to}>{item.cta.label}</Link>
+                </div>
+                <CaseVisual visual={item.visual} />
+              </SectionReveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="section process" id="process">
+        <div className="shell">
+          <SectionReveal className="section-heading">
+            <div>
+              <span className="section-number">{home.processHeading.number}</span>
+              <span className="eyebrow eyebrow-dark">{home.processHeading.eyebrow}</span>
+            </div>
+            <h2>
+              {home.processHeading.title}
+              <br />
+              <em>{home.processHeading.titleEm}</em>
+            </h2>
+            <p>{home.processHeading.text}</p>
+          </SectionReveal>
+
+          <SectionReveal className="process-board">
+            <div className="process-line" aria-hidden="true">
+              <i />
+            </div>
+            {process.map((step) => (
+              <article key={step.number}>
+                <span>{step.number}</span>
+                <div className="process-icon">{step.icon}</div>
+                <h3>{step.title}</h3>
+                <p>{step.text}</p>
+                <small>{step.result}</small>
+              </article>
+            ))}
+          </SectionReveal>
+        </div>
+      </section>
+
+      <section className="section team" id="team">
+        <div className="shell team-grid">
+          <SectionReveal className="team-copy">
+            <span className="section-number">{home.team.number}</span>
+            <span className="eyebrow eyebrow-dark">{home.team.eyebrow}</span>
+            <h2>
+              {home.team.title}
+              <br />
+              <em>{home.team.titleEm}</em>
+            </h2>
+            <p>{home.team.text}</p>
+            <div className="team-note">
+              <span>●</span>
+              <p>
+                <strong>{home.team.noteTitle}</strong>
+                <br />
+                {home.team.noteText}
+              </p>
+            </div>
+          </SectionReveal>
+
+          <div className="team-cards">
+            {team.map((member, index) => (
+              <SectionReveal
+                key={member.id}
+                className={`person-card person-${['one', 'two', 'three', 'four'][index]}`}
+                delay={index % 2 === 1}
+              >
+                <div className={`avatar avatar-${member.avatar}`}>
+                  <span>{member.initial}</span>
+                  <i />
+                </div>
+                <h3>{member.name}</h3>
+                <p>{member.role}</p>
+              </SectionReveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="section contact" id="contact">
+        <div className="shell contact-shell">
+          <SectionReveal className="contact-head">
+            <div className="eyebrow">
+              <span /> {home.contact.eyebrow}
+            </div>
+            <h2>
+              {home.contact.title}
+              <br />
+              <em>{home.contact.titleEm}</em>
+            </h2>
+            <p>{home.contact.text}</p>
+          </SectionReveal>
+
+          <div className="contact-grid">
+            <SectionReveal>
+              <ContactForm />
+            </SectionReveal>
+
+            <SectionReveal className="contact-card" delay>
+              <div>
+                <small>{home.contact.directLabel}</small>
+                <a href={`mailto:${contacts.email}`}>{contacts.email}</a>
+                <a href={contacts.telegram} target="_blank" rel="noopener noreferrer">
+                  {contacts.telegramLabel}
+                </a>
+              </div>
+              <div className="availability">
+                <i />
+                <span>
+                  <strong>{contacts.availabilityTitle}</strong>
+                  <small>{contacts.availabilityText}</small>
+                </span>
+              </div>
+              <div className="contact-cat" aria-hidden="true">
+                <i />
+                <i />
+                <span>К</span>
+                <b />
+              </div>
+            </SectionReveal>
+          </div>
+        </div>
+      </section>
+    </main>
   )
 }

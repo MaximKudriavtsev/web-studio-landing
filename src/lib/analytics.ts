@@ -1,5 +1,5 @@
-const STORAGE_KEY = 'nova-cookie-consent'
-const OPEN_EVENT = 'nova:open-cookie-settings'
+const STORAGE_KEY = 'kotdela-cookie-consent'
+const OPEN_EVENT = 'kotdela:open-cookie-settings'
 
 export type CookiePreferences = {
   analytics: boolean

@@ -1,62 +1,20 @@
-/** Lucide icon keys — mapped to components in UI layer */
-export type IconKey =
-  | 'store'
-  | 'building-2'
-  | 'layout-dashboard'
-  | 'palette'
-  | 'package'
-  | 'shopping-cart'
-  | 'credit-card'
-  | 'truck'
-  | 'chart-column'
-  | 'circle-help'
-  | 'mail'
-  | 'phone'
-  | 'send'
-  | 'message-circle'
-  | 'map-pin'
-  | 'clock'
-  | 'sparkles'
-  | 'smartphone'
-  | 'plug'
-  | 'life-buoy'
-  | 'search'
-  | 'pen-line'
-  | 'code-2'
-  | 'rocket'
-  | 'users'
-  | 'eye'
-  | 'shield-check'
-  | 'layers'
-  | 'refresh-cw'
-  | 'zap'
-
 export type NavItem = {
   label: string
   to: string
 }
 
-export type CtaLink = {
-  label: string
-  to: string
-}
-
 export type Brand = {
-  /** TODO: временное название, заменить до публикации */
   name: string
   descriptor: string
-  shortName: string
+  mark: string
 }
 
 export type Contacts = {
   email: string
-  phone: string
   telegram: string
-  whatsapp: string
-  location: string
-  workHours: string
-  /** Shown only when non-empty — e.g. «обычно отвечаем в течение дня» */
-  responseTimeText: string
+  telegramLabel: string
+  availabilityTitle: string
+  availabilityText: string
 }
 
 export type SeoPage = {
@@ -66,222 +24,141 @@ export type SeoPage = {
 
 export type SeoContent = {
   home: SeoPage
-  services: SeoPage
-  work: SeoPage
-  contact: SeoPage
   privacy: SeoPage
-  personalData: SeoPage
+  consent: SeoPage
+  notFound: SeoPage
 }
 
-export type ServiceId =
-  | 'ecommerce'
-  | 'business-site'
-  | 'web-app'
-  | 'design-support'
+export type HeroMeta = {
+  number: string
+  text: string
+}
 
-export type Service = {
-  id: ServiceId
+export type HomeHero = {
+  eyebrow: string
+  headline: string
+  headlineEm: string
+  lead: string
+  primaryCta: { label: string; to: string }
+  secondaryCta: { label: string; to: string }
+  meta: HeroMeta[]
+  trustLabel: string
+  trustItems: string[]
+}
+
+export type ServiceArt = 'browser' | 'phone' | 'type' | 'speed'
+
+export type ServiceCard = {
+  id: string
+  number: string
+  icon: string
   title: string
-  summary: string
+  text: string
   features: string[]
-  icon: IconKey
-  /** Prefills contact form via `?service=` */
-  queryValue: string
+  art: ServiceArt
+  variant: 'featured' | 'coral' | 'ink' | 'blue'
 }
 
-export type YandexKitFeature = {
-  title: string
-  icon: IconKey
-}
+export type CaseVisual = 'shop' | 'erp' | 'owl'
 
-export type YandexKitContent = {
-  title: string
-  description: string
-  features: YandexKitFeature[]
-  note: string
-  cta: CtaLink
-  /** Extended copy for Services page */
-  longDescription: string
-  responsibilities: string[]
-  disclaimer: string
-}
-
-export type CaseCategoryId =
-  | 'ecommerce'
-  | 'web-service'
-  | 'digital-product'
-  | 'ux-ui'
-
-export type CaseCoverKey = 'store' | 'dashboard' | 'product'
-
-export type CaseStudy = {
+export type CaseCard = {
   id: string
   title: string
-  categoryId: CaseCategoryId
-  categoryLabel: string
-  summary: string
-  task: string
-  done: string[]
-  features: string[]
-  result: string
-  /** Real project URL; omit or leave empty to hide link */
-  href: string
-  cover: CaseCoverKey
+  text: string
+  tags: string[]
+  cta: { label: string; to: string }
+  visual: CaseVisual
+  variant: 'lime' | 'violet' | 'sand'
 }
 
-export type CaseFilter = {
-  id: 'all' | CaseCategoryId
-  label: string
+export type ProcessStep = {
+  number: string
+  icon: string
+  title: string
+  text: string
+  result: string
 }
 
 export type TeamMember = {
   id: string
   name: string
   role: string
-  initials: string
-  /** Optional photo path; empty → initials avatar */
-  photo: string
+  initial: string
+  avatar: 'd' | 'm' | 'o' | 'n'
 }
 
-export type ProcessStep = {
-  number: string
-  title: string
-  text: string
-}
-
-export type FaqItem = {
-  question: string
-  answer: string
-}
-
-export type LegalLink = {
-  label: string
-  to: string
-}
-
-export type LegalContent = {
-  footerNote: string
-  links: LegalLink[]
-  privacyPlaceholder: string
-  personalDataPlaceholder: string
-}
-
-export type HomeHero = {
-  headline: string
-  support: string
-  primaryCta: CtaLink
-  secondaryCta: CtaLink
-  advantages: string[]
-}
-
-export type HomeContent = {
-  hero: HomeHero
-  servicesTitle: string
-  servicesText: string
-  servicesAllLink: CtaLink
-  casesTitle: string
-  casesText: string
-  casesAllLink: CtaLink
-  processTitle: string
-  teamTitle: string
-  teamText: string
-  teamAdvantages: string[]
-  ctaTitle: string
-  ctaText: string
-  ctaButton: CtaLink
-}
-
-export type ServicesPageContent = {
-  heroTitle: string
-  heroText: string
-  primaryCta: CtaLink
-  secondaryCta: CtaLink
-  processTitle: string
-  processSteps: ProcessStep[]
-  faqTitle: string
-  ctaTitle: string
-  ctaButton: CtaLink
-}
-
-export type WorkPageContent = {
-  heroTitle: string
-  heroText: string
-  filters: CaseFilter[]
-  emptyFilterMessage: string
-  /**
-   * Extra compact case cards under the main list.
-   * Leave empty to hide the section entirely.
-   * To add a case later: push an object with title, categoryLabel, summary, href?.
-   */
-  additionalCases: Array<{
-    title: string
-    categoryLabel: string
-    summary: string
-    href: string
-  }>
-  ctaTitle: string
-  ctaText: string
-  primaryCta: CtaLink
-  secondaryCta: CtaLink
-}
-
-export type ProjectTypeOption = {
-  value: string
-  label: string
-}
-
-export type ContactNeed = {
-  title: string
-  text: string
-  icon: IconKey
-}
-
-export type ContactAfterStep = {
-  number: string
-  title: string
-  text: string
-}
-
-export type ContactFormContent = {
+export type ContactFormCopy = {
   nameLabel: string
   namePlaceholder: string
   contactLabel: string
   contactPlaceholder: string
-  projectTypeLabel: string
-  projectTypes: ProjectTypeOption[]
   messageLabel: string
   messagePlaceholder: string
-  consentLabel: string
+  consentBefore: string
+  consentLink: string
+  and: string
+  privacyLink: string
+  consentAfter: string
   submit: string
-  success: string
-  demoSuccess: string
-  errorName: string
-  errorContact: string
-  errorProjectType: string
-  errorMessage: string
-  errorConsent: string
-  errorNetwork: string
-  loading: string
+  statusIdle: string
+  statusError: string
+  statusSuccess: string
 }
 
-export type ContactPageContent = {
-  heroTitle: string
-  heroText: string
-  advantages: string[]
-  form: ContactFormContent
-  needsTitle: string
-  needs: ContactNeed[]
-  afterTitle: string
-  afterSteps: ContactAfterStep[]
-  mapRemoteText: string
-  ctaTitle: string
-  ctaText: string
-  ctaButton: CtaLink
+export type ContactSection = {
+  eyebrow: string
+  title: string
+  titleEm: string
+  text: string
+  form: ContactFormCopy
+  directLabel: string
 }
 
-export type FooterContent = {
-  description: string
-  rights: string
+export type SectionHeading = {
+  number: string
+  eyebrow: string
+  title: string
+  titleEm: string
+  text: string
+}
+
+export type HomeContent = {
+  hero: HomeHero
+  servicesHeading: SectionHeading
+  workHeading: SectionHeading
+  processHeading: SectionHeading
+  team: {
+    number: string
+    eyebrow: string
+    title: string
+    titleEm: string
+    text: string
+    noteTitle: string
+    noteText: string
+  }
+  contact: ContactSection
+}
+
+export type LegalDocument = {
+  eyebrow: string
+  title: string
+  warning: string
+  html: string
+  dateLabel: string
+  dateValue: string
+}
+
+export type LegalContent = {
+  privacy: LegalDocument
+  consent: LegalDocument
+  links: Array<{ label: string; to: string }>
+  tagline: string
+}
+
+export type NotFoundContent = {
+  eyebrow: string
+  title: string
+  cta: string
 }
 
 export type SiteContent = {
@@ -289,16 +166,12 @@ export type SiteContent = {
   seo: SeoContent
   contacts: Contacts
   navigation: NavItem[]
-  footer: FooterContent
+  headerCta: { label: string; to: string }
   home: HomeContent
-  servicesPage: ServicesPageContent
-  workPage: WorkPageContent
-  contactPage: ContactPageContent
-  services: Service[]
-  yandexKit: YandexKitContent
-  cases: CaseStudy[]
-  team: TeamMember[]
+  services: ServiceCard[]
+  cases: CaseCard[]
   process: ProcessStep[]
-  faq: FaqItem[]
+  team: TeamMember[]
   legal: LegalContent
+  notFound: NotFoundContent
 }
