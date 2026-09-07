@@ -1,5 +1,6 @@
 import { type FormEvent, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { CatLogo } from '../components/CatLogo'
 import { SectionReveal } from '../components/SectionReveal'
 import { site } from '../content/site'
 import type { CaseCard, ServiceCard } from '../content/types'
@@ -315,7 +316,9 @@ export const HomePage = () => {
               </div>
               <div className="window-body">
                 <aside className="mock-sidebar">
-                  <div className="mock-logo">К</div>
+                  <div className="mock-logo">
+                    <CatLogo />
+                  </div>
                   <i className="active" />
                   <i />
                   <i />
@@ -482,9 +485,6 @@ export const HomePage = () => {
           </SectionReveal>
 
           <SectionReveal className="process-board">
-            <div className="process-line" aria-hidden="true">
-              <i />
-            </div>
             {process.map((step) => (
               <article key={step.number}>
                 <span>{step.number}</span>
@@ -573,10 +573,7 @@ export const HomePage = () => {
                 </span>
               </div>
               <div className="contact-cat" aria-hidden="true">
-                <i />
-                <i />
-                <span>К</span>
-                <b />
+                <CatLogo />
               </div>
             </SectionReveal>
           </div>

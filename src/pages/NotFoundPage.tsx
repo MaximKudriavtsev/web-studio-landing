@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { CatLogo } from '../components/CatLogo'
 import { site } from '../content/site'
 import { usePageSeo } from '../hooks/usePageSeo'
 
@@ -9,10 +10,7 @@ export const NotFoundPage = () => {
     <div className="not-found">
       <main>
         <div className="contact-cat" aria-hidden="true">
-          <i />
-          <i />
-          <span>К</span>
-          <b />
+          <CatLogo />
         </div>
         <p className="eyebrow eyebrow-dark">{site.notFound.eyebrow}</p>
         <h1>

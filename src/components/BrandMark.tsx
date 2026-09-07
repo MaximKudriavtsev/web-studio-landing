@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { site } from '../content/site'
+import { CatLogo } from './CatLogo'
 
 type BrandMarkProps = {
   className?: string
@@ -15,9 +16,7 @@ export const BrandMark = ({ className = '', to = '/#top', footer = false }: Bran
       aria-label={`${site.brand.name} — на главную`}
     >
       <span className="brand-mark" aria-hidden="true">
-        <i />
-        <i />
-        <b>{site.brand.mark}</b>
+        <CatLogo />
       </span>
       <span className="brand-text">
         <strong>{site.brand.name}</strong>
