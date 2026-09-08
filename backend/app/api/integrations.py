@@ -73,11 +73,19 @@ def check_gigachat() -> IntegrationCheckResponse:
         model=settings.gigachat_model,
     )
     try:
-        client.check()
+        models = client.check()
     except GigaChatError as exc:
         _gigachat_verified_status = "ERROR"
         return IntegrationCheckResponse(integration="GigaChat", status="ERROR", message=str(exc))
     finally:
         client.close()
     _gigachat_verified_status = "CONNECTED"
-    return IntegrationCheckResponse(integration="GigaChat", status="CONNECTED")
+    warning = None
+    if settings.gigachat_model not in models:
+        warning = "Configured GigaChat model is not available; select an available model before analysis"
+    return IntegrationCheckResponse(
+        integration="GigaChat",
+        status="CONNECTED",
+        models=models,
+        warning=warning,
+    )

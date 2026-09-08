@@ -28,3 +28,5 @@
 - `/ai` показывает Search Intelligence summary, фильтры и preview table.
 - Первый Wordstat sample подтвердил semantic noise: игровые, DIY, фото-инструменты и информационные запросы смешаны с коммерческим спросом.
 - Реальный GigaChat-анализ не выполнялся: credentials `NOT_CONFIGURED`.
+- OAuth token endpoint приведён к `ngw.devices.sberbank.ru:9443/api/v2/oauth`; model API остаётся на `api.giga.chat/v1`.
+- Integration check безопасно возвращает ID реально доступных моделей и предупреждает, если configured model отсутствует.

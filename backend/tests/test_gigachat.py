@@ -49,6 +49,62 @@ def test_batch_parsing_and_authorization_headers() -> None:
     assert calls == ["/api/v2/oauth", "/v1/chat/completions"]
 
 
+def test_check_uses_separate_oauth_host_and_parses_models() -> None:
+    seen_urls = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        seen_urls.append(str(request.url))
+        assert "secret" not in str(request.url)
+        if request.url.path.endswith("/oauth"):
+            assert request.url.host == "ngw.devices.sberbank.ru"
+            assert request.url.port == 9443
+            return httpx.Response(200, json={"access_token": "temporary-token"})
+        assert request.url.host == "api.giga.chat"
+        assert request.url.path == "/v1/models"
+        return httpx.Response(200, json={"object": "list", "data": [
+            {"id": "GigaChat-2", "object": "model"},
+            {"id": "GigaChat-2-Pro", "object": "model"},
+        ]})
+
+    client = GigaChatClient("client", "secret", scope="GIGACHAT_API_PERS", model="GigaChat-2-Max", transport=httpx.MockTransport(handler))
+    models = client.check()
+    client.close()
+    assert models == ["GigaChat-2", "GigaChat-2-Pro"]
+    assert seen_urls == [
+        "https://ngw.devices.sberbank.ru:9443/api/v2/oauth",
+        "https://api.giga.chat/v1/models",
+    ]
+
+
+def test_check_endpoint_warns_when_configured_model_is_unavailable(monkeypatch: pytest.MonkeyPatch) -> None:
+    from app.api import integrations
+
+    class FakeClient:
+        def __init__(self, *args, **kwargs):
+            pass
+
+        def check(self) -> list[str]:
+            return ["GigaChat-2", "GigaChat-2-Pro"]
+
+        def close(self) -> None:
+            pass
+
+    monkeypatch.setenv("GIGACHAT_CLIENT_ID", "configured")
+    monkeypatch.setenv("GIGACHAT_CLIENT_SECRET", "configured")
+    get_settings.cache_clear()
+    monkeypatch.setattr(integrations, "GigaChatClient", FakeClient)
+    try:
+        with TestClient(app) as client:
+            response = client.post("/api/integrations/gigachat/check")
+        data = response.json()
+        assert data["status"] == "CONNECTED"
+        assert data["models"] == ["GigaChat-2", "GigaChat-2-Pro"]
+        assert "not available" in data["warning"]
+        assert "configured" not in json.dumps(data)
+    finally:
+        get_settings.cache_clear()
+
+
 def test_invalid_structured_output_retries_once() -> None:
     completions = 0
 

@@ -136,7 +136,10 @@ def test_missing_credentials_check(monkeypatch: pytest.MonkeyPatch) -> None:
     try:
         with TestClient(app) as client:
             response = client.post("/api/integrations/wordstat/check")
-        assert response.json() == {"integration": "Wordstat", "status": "NOT_CONFIGURED", "message": None}
+        assert response.json() == {
+            "integration": "Wordstat", "status": "NOT_CONFIGURED", "message": None,
+            "models": None, "warning": None,
+        }
     finally:
         get_settings.cache_clear()
 

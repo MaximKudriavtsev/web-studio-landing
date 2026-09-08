@@ -26,6 +26,8 @@ GigaChat, Webmaster и Metrika API не подключены.
 - Credentials: только локальные `GIGACHAT_CLIENT_ID` и `GIGACHAT_CLIENT_SECRET`.
 - Config: `AI_GIGACHAT_SCOPE`, `AI_GIGACHAT_MODEL`, `AI_GIGACHAT_BATCH_SIZE`.
 - OAuth token хранится только в памяти provider instance и не логируется.
+- OAuth token endpoint: `https://ngw.devices.sberbank.ru:9443/api/v2/oauth`; model API: `https://api.giga.chat/v1`.
+- `AI_GIGACHAT_SCOPE` должен совпадать с проектом GigaChat Studio: `GIGACHAT_API_PERS` — физлица; `GIGACHAT_API_B2B` — ИП/юрлица с пакетами; `GIGACHAT_API_CORP` — ИП/юрлица pay-as-you-go.
 - States: `NOT_CONFIGURED`, `CONFIGURED`, `CONNECTED`, `ERROR`; credentials сами по себе дают только `CONFIGURED`.
-- Connection check использует список моделей, а analysis — JSON Schema structured output с Pydantic validation.
+- Connection check возвращает только ID доступных моделей. Если `AI_GIGACHAT_MODEL` отсутствует в списке, backend предупреждает об этом и не меняет модель автоматически. Analysis использует JSON Schema structured output с Pydantic validation.
 - Реальный status: `NOT_CONFIGURED`; API-вызовы не выполнялись.

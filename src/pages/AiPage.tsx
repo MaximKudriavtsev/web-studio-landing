@@ -79,9 +79,10 @@ export const AiPage = () => {
     setMessage('')
     try {
       const response = await fetch(`${apiUrl}/api/integrations/gigachat/check`, { method: 'POST' })
-      const data = await response.json() as { status: string; message?: string }
+      const data = await response.json() as { status: string; message?: string; warning?: string }
       setIntegrations((current) => current.map((item) => item.name === 'GigaChat' ? { ...item, status: data.status } : item))
       if (data.message) setMessage(data.message)
+      if (data.warning) setMessage(data.warning)
     } catch {
       setMessage('Не удалось связаться с локальным backend.')
     } finally {

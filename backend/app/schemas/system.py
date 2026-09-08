@@ -21,3 +21,5 @@ class IntegrationCheckResponse(BaseModel):
     integration: Literal["Wordstat", "GigaChat"]
     status: Literal["NOT_CONFIGURED", "CONNECTED", "ERROR"]
     message: str | None = None
+    models: list[str] | None = None
+    warning: str | None = None

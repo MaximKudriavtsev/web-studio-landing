@@ -27,7 +27,7 @@ SYSTEM_PROMPT = """Ты классификатор поискового спро
 
 
 class GigaChatClient:
-    TOKEN_URL = "https://api.giga.chat/api/v2/oauth"
+    TOKEN_URL = "https://ngw.devices.sberbank.ru:9443/api/v2/oauth"
     API_URL = "https://api.giga.chat/v1"
 
     def __init__(
@@ -74,7 +74,7 @@ class GigaChatClient:
         token = self._token or self._request_token()
         return {"Authorization": f"Bearer {token}", "Content-Type": "application/json", "Accept": "application/json"}
 
-    def check(self) -> None:
+    def check(self) -> list[str]:
         try:
             response = self._client.get(f"{self.API_URL}/models", headers=self._headers())
         except httpx.TimeoutException as exc:
@@ -85,6 +85,12 @@ class GigaChatClient:
             raise GigaChatError("GigaChat authentication or access denied")
         if response.is_error:
             raise GigaChatError(f"GigaChat check failed with HTTP {response.status_code}")
+        try:
+            models = response.json()["data"]
+            model_ids = [str(item["id"]) for item in models]
+        except (KeyError, TypeError, ValueError) as exc:
+            raise GigaChatError("GigaChat models returned an unexpected response") from exc
+        return model_ids
 
     def analyze_batch(self, queries: list[QueryInput]) -> IntelligenceBatch:
         schema = IntelligenceBatch.model_json_schema()
