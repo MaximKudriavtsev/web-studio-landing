@@ -31,3 +31,5 @@
 - OAuth token endpoint приведён к `ngw.devices.sberbank.ru:9443/api/v2/oauth`; model API остаётся на `api.giga.chat/v1`.
 - Integration check безопасно возвращает ID реально доступных моделей и предупреждает, если configured model отсутствует.
 - Добавлена безопасная поддержка дополнительного CA bundle для GigaChat поверх стандартного SSL trust store; локальные сертификаты исключены из Git.
+- GigaChat HTTP client изолирован от environment-aware HTTPX path через `trust_env=False`; TLS verification и дополнительный CA остаются обязательными.
+- Реальная проверка GigaChat подтверждена: OAuth и `GET /v1/models` вернули HTTP 200, configured model доступна; `chat/completions` не выполнялся.

@@ -19,7 +19,7 @@
 - В стадии FOUNDATION добавлен отдельный локальный backend-каркас и SQLite infrastructure.
 - В Phase 1 добавлен официальный Wordstat REST adapter, ручная проверка подключения, технические endpoints и SQL-хранение сырых запросов и временного ряда спроса.
 - Первый GetTop `создание сайтов` сохранил 44 строки: 30 results и 14 associations. Выборка содержит значительный semantic noise.
-- В Phase 2 добавлен GigaChat intelligence layer, но реальный анализ не запускался: credentials отсутствуют.
+- В Phase 2 добавлен GigaChat intelligence layer. OAuth и список моделей проверены успешно; реальный анализ не запускался.
 
 ## Текущие услуги
 
@@ -30,7 +30,7 @@
 
 ## Интеграции
 
-- GigaChat — `NOT_CONFIGURED`
+- GigaChat — `CONNECTED` (OAuth и `/v1/models` проверены вручную)
 - Wordstat — `CONNECTED` (проверен вручную)
 - Webmaster — `NOT_CONFIGURED`
 - Metrika — `NOT_CONFIGURED_FOR_AI_ENGINE`

@@ -10,7 +10,7 @@
 
 ## Phase 2 — AI Intelligence
 
-Статус: код готов, реальный запуск ожидает credentials. GigaChat provider, normalization, intents, semantic clustering, relevance и disposition classification.
+Статус: OAuth и получение списка моделей проверены; реальный analysis запуск отдельно не разрешался. GigaChat provider, normalization, intents, semantic clustering, relevance и disposition classification готовы.
 
 ## Phase 3 — Decision Engine
 

@@ -57,6 +57,34 @@ def test_missing_ca_path_has_safe_error(tmp_path) -> None:
     assert "credential" not in str(error.value).lower()
 
 
+def test_client_uses_custom_verified_ssl_context_without_environment_network_config(monkeypatch: pytest.MonkeyPatch) -> None:
+    from app.providers import gigachat as provider
+
+    class FakeContext:
+        verify_mode = __import__("ssl").CERT_REQUIRED
+
+    ssl_context = FakeContext()
+    captured: dict = {}
+
+    class FakeHttpClient:
+        def __init__(self, **kwargs) -> None:
+            captured.update(kwargs)
+
+        def close(self) -> None:
+            pass
+
+    monkeypatch.setattr(provider, "create_gigachat_ssl_context", lambda _: ssl_context)
+    monkeypatch.setattr(provider.httpx, "Client", FakeHttpClient)
+
+    client = GigaChatClient("client", "super-secret", scope="GIGACHAT_API_PERS", model="test", ca_bundle="local.crt")
+    client.close()
+
+    assert captured["trust_env"] is False
+    assert captured["verify"] is ssl_context
+    assert captured["verify"].verify_mode == __import__("ssl").CERT_REQUIRED
+    assert "super-secret" not in repr(captured)
+
+
 def test_batch_parsing_and_authorization_headers() -> None:
     calls = []
 

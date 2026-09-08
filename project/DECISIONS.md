@@ -35,3 +35,7 @@ Wordstat не подключается к scheduler на Phase 1. Каждый �
 ## Decision 009 — Типизированный пакетный intelligence
 
 GigaChat получает группы до `AI_GIGACHAT_BATCH_SIZE` запросов и возвращает JSON Schema output, валидируемый Pydantic. На невалидный ответ допускается один controlled retry; испорченный batch не сохраняется. Частотность передаётся только как evidence и не определяет opportunity автоматически.
+
+## Decision 010 — Изолированный сетевой путь GigaChat
+
+GigaChat-specific `httpx.Client` использует `trust_env=False`, потому что на текущем локальном Windows-окружении environment-aware HTTPX path приводит к `ConnectTimeout`, а прямой path с тем же проверяющим SSLContext достигает API. Решение не меняет Windows VPN/TUN или proxy settings, не отключает TLS verification и не обходит проверку CA; оно отключает только применение HTTPX environment variables/configuration для этого клиента.

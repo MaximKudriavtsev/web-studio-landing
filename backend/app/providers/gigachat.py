@@ -66,6 +66,7 @@ class GigaChatClient:
             timeout=httpx.Timeout(60.0, connect=10.0),
             transport=transport,
             verify=ssl_context,
+            trust_env=False,
         )
 
     def close(self) -> None:
