@@ -12,6 +12,7 @@ from app.db import Base, get_db
 from app.main import app
 from app.models import RawSearchQuery, SearchIntent
 from app.providers.gigachat import GigaChatClient, GigaChatStructuredOutputError
+from app.providers.gigachat import GigaChatError, create_gigachat_ssl_context
 from app.schemas.intelligence import IntelligenceBatch, QueryInput
 
 
@@ -27,6 +28,33 @@ def response_item(raw_id: int, disposition: str, cluster: str) -> dict:
         "confidence": 0.9,
         "reason": "Validated classification",
     }
+
+
+def test_additional_ca_is_loaded_with_verification_enabled(tmp_path, monkeypatch: pytest.MonkeyPatch) -> None:
+    from app.providers import gigachat as provider
+
+    certificate = tmp_path / "trusted.crt"
+    certificate.write_text("test certificate placeholder")
+
+    class FakeContext:
+        verify_mode = __import__("ssl").CERT_REQUIRED
+        loaded: str | None = None
+
+        def load_verify_locations(self, *, cafile: str) -> None:
+            self.loaded = cafile
+
+    context = FakeContext()
+    monkeypatch.setattr(provider.ssl, "create_default_context", lambda: context)
+    result = create_gigachat_ssl_context(str(certificate))
+    assert result.verify_mode == __import__("ssl").CERT_REQUIRED
+    assert result.loaded == str(certificate)
+
+
+def test_missing_ca_path_has_safe_error(tmp_path) -> None:
+    missing = tmp_path / "missing.crt"
+    with pytest.raises(GigaChatError, match="CA bundle does not exist") as error:
+        create_gigachat_ssl_context(str(missing))
+    assert "credential" not in str(error.value).lower()
 
 
 def test_batch_parsing_and_authorization_headers() -> None:

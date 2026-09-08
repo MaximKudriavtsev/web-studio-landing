@@ -27,6 +27,7 @@ def create_gigachat_client() -> GigaChatClient:
         settings.gigachat_client_secret,
         scope=settings.gigachat_scope,
         model=settings.gigachat_model,
+        ca_bundle=settings.gigachat_ca_bundle,
     )
 
 

@@ -1,5 +1,7 @@
 import base64
 import json
+import ssl
+from pathlib import Path
 from uuid import uuid4
 
 import httpx
@@ -14,6 +16,20 @@ class GigaChatError(Exception):
 
 class GigaChatStructuredOutputError(GigaChatError):
     pass
+
+
+def create_gigachat_ssl_context(ca_bundle: str = "") -> ssl.SSLContext:
+    context = ssl.create_default_context()
+    if not ca_bundle.strip():
+        return context
+    certificate_path = Path(ca_bundle).expanduser()
+    if not certificate_path.is_file():
+        raise GigaChatError("Configured GigaChat CA bundle does not exist")
+    try:
+        context.load_verify_locations(cafile=str(certificate_path))
+    except (OSError, ssl.SSLError) as exc:
+        raise GigaChatError("Configured GigaChat CA bundle could not be loaded") from exc
+    return context
 
 
 SYSTEM_PROMPT = """Ты классификатор поискового спроса digital-агентства «КОТ ДЕЛА».
@@ -37,6 +53,7 @@ class GigaChatClient:
         *,
         scope: str,
         model: str,
+        ca_bundle: str = "",
         transport: httpx.BaseTransport | None = None,
     ) -> None:
         credentials = base64.b64encode(f"{client_id}:{client_secret}".encode()).decode()
@@ -44,7 +61,12 @@ class GigaChatClient:
         self.scope = scope
         self.model = model
         self._token: str | None = None
-        self._client = httpx.Client(timeout=httpx.Timeout(60.0, connect=10.0), transport=transport)
+        ssl_context = create_gigachat_ssl_context(ca_bundle)
+        self._client = httpx.Client(
+            timeout=httpx.Timeout(60.0, connect=10.0),
+            transport=transport,
+            verify=ssl_context,
+        )
 
     def close(self) -> None:
         self._client.close()

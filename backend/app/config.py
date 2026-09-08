@@ -21,6 +21,7 @@ class Settings(BaseSettings):
     gigachat_scope: str = "GIGACHAT_API_PERS"
     gigachat_model: str = "GigaChat-2-Max"
     gigachat_batch_size: int = 15
+    gigachat_ca_bundle: str = ""
     model_config = SettingsConfigDict(env_file=BACKEND_DIR / ".env", env_prefix="AI_", extra="ignore")
 
     @property

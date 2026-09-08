@@ -15,3 +15,5 @@ Bootstrap seeds хранятся отдельно в `backend/data/bootstrap_see
 `providers/gigachat.py` получает короткоживущий OAuth token из Client ID/Secret, не логирует credentials/token и вызывает structured output `chat/completions`. `schemas/intelligence.py` ограничивает словари enum-значениями и confidence диапазоном 0–1. Batch size конфигурируется и ограничивается 20 фразами.
 
 `POST /api/intelligence/analyze-existing` выбирает только RawSearchQuery без SearchIntent, поэтому повторный запуск не создаёт дубли. Валидный batch сохраняется транзакционно; invalid output получает один retry, затем batch отмечается ошибкой без записи. `GET /api/intelligence/queries` формирует summary и фильтрованный preview. Scheduler в этом контуре не используется.
+
+GigaChat TLS использует `ssl.create_default_context()` и при наличии `AI_GIGACHAT_CA_BUNDLE` добавляет локальный доверенный CA через `load_verify_locations()`. Системные CA сохраняются, certificate verification остаётся обязательной. `verify=False`, `CERT_NONE` и insecure fallback отсутствуют.

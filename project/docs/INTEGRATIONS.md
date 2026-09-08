@@ -25,6 +25,7 @@ GigaChat, Webmaster и Metrika API не подключены.
 
 - Credentials: только локальные `GIGACHAT_CLIENT_ID` и `GIGACHAT_CLIENT_SECRET`.
 - Config: `AI_GIGACHAT_SCOPE`, `AI_GIGACHAT_MODEL`, `AI_GIGACHAT_BATCH_SIZE`.
+- TLS config: `AI_GIGACHAT_CA_BUNDLE` — абсолютный путь к локальному CA certificate. Файл хранится вне Git; verification остаётся включённой.
 - OAuth token хранится только в памяти provider instance и не логируется.
 - OAuth token endpoint: `https://ngw.devices.sberbank.ru:9443/api/v2/oauth`; model API: `https://api.giga.chat/v1`.
 - `AI_GIGACHAT_SCOPE` должен совпадать с проектом GigaChat Studio: `GIGACHAT_API_PERS` — физлица; `GIGACHAT_API_B2B` — ИП/юрлица с пакетами; `GIGACHAT_API_CORP` — ИП/юрлица pay-as-you-go.

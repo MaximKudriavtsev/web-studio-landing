@@ -30,3 +30,4 @@
 - Реальный GigaChat-анализ не выполнялся: credentials `NOT_CONFIGURED`.
 - OAuth token endpoint приведён к `ngw.devices.sberbank.ru:9443/api/v2/oauth`; model API остаётся на `api.giga.chat/v1`.
 - Integration check безопасно возвращает ID реально доступных моделей и предупреждает, если configured model отсутствует.
+- Добавлена безопасная поддержка дополнительного CA bundle для GigaChat поверх стандартного SSL trust store; локальные сертификаты исключены из Git.

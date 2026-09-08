@@ -17,6 +17,8 @@ API: `GET /health`, `GET /api/integrations`, `POST /api/integrations/wordstat/ch
 
 Wordstat по умолчанию имеет статус `NOT_CONFIGURED`. После подготовки доступа заполните только локальный `.env`: `AI_WORDSTAT_API_KEY`, `AI_YANDEX_FOLDER_ID`. Лимит одного ручного запуска задаётся `AI_WORDSTAT_MAX_REQUESTS_PER_RUN` (по умолчанию 5). Scheduler не запускает Wordstat jobs.
 
+Для GigaChat сохраните доверенный сертификат локально в `backend/certs/` и укажите абсолютный путь в `AI_GIGACHAT_CA_BUNDLE`. Provider сохраняет системное хранилище доверия и добавляет этот CA через `ssl.create_default_context()`; отключение TLS verification запрещено.
+
 ## Проверки
 
 ```powershell
