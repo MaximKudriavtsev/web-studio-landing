@@ -42,6 +42,11 @@ class SearchIntent(TimestampMixin, Base):
     intent: Mapped[str] = mapped_column(String(100), index=True)
     normalized_query: Mapped[str] = mapped_column(String(500))
     confidence: Mapped[float | None] = mapped_column(Float)
+    business_relevance: Mapped[str | None] = mapped_column(String(20), index=True)
+    commerciality: Mapped[str | None] = mapped_column(String(20))
+    cluster_name: Mapped[str | None] = mapped_column(String(250), index=True)
+    disposition: Mapped[str | None] = mapped_column(String(40), index=True)
+    reasoning: Mapped[str | None] = mapped_column(Text)
     raw_query: Mapped[RawSearchQuery | None] = relationship()
 
 

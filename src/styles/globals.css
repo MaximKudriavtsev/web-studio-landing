@@ -82,6 +82,26 @@
   background: var(--color-surface);
 }
 
+.ai-intelligence {
+  margin-top: 14px;
+  padding: clamp(24px, 4vw, 48px);
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+}
+
+.ai-intelligence h2 { margin: 8px 0 18px; font-family: var(--font-display); font-size: clamp(2rem, 4vw, 3.5rem); font-weight: 500; }
+.ai-intelligence-stats { display: flex; flex-wrap: wrap; gap: 10px; margin: 24px 0; }
+.ai-intelligence-stats span { padding: 10px 14px; border-radius: 999px; background: var(--color-page-bg); }
+.ai-action-secondary { margin-left: 10px; }
+.ai-intelligence-filters { display: flex; gap: 14px; margin: 28px 0 16px; }
+.ai-intelligence-filters label { display: grid; gap: 6px; color: var(--color-text-secondary); font-size: .8rem; }
+.ai-intelligence-filters select { min-height: 42px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); background: var(--color-page-bg); padding: 0 12px; }
+.ai-intelligence-table { overflow-x: auto; }
+.ai-intelligence-table table { width: 100%; border-collapse: collapse; font-size: .82rem; }
+.ai-intelligence-table th, .ai-intelligence-table td { padding: 12px 10px; border-top: 1px solid var(--color-border); text-align: left; white-space: nowrap; }
+
 .ai-wordstat {
   margin-top: 14px;
   padding: clamp(24px, 4vw, 48px);

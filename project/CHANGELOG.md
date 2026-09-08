@@ -17,3 +17,14 @@
 - `/ai` показывает статус Wordstat, проверку подключения и тестовую форму при `CONNECTED`.
 - Scheduler не выполняет Wordstat jobs; реальные credentials и реальные запросы отсутствуют.
 - `npm audit`: transitive `nanoid@3.3.16` имеет high advisory `GHSA-2v37-7h3g-55p8`. Он входит в dev toolchain через `postcss` → `vite`; production runtime сайта его не импортирует. Автоисправление не выполнялось.
+
+## Unreleased — Phase 2 AI Intelligence
+
+- Добавлен безопасный OAuth provider GigaChat и integration check.
+- Добавлены типизированные intent, relevance, commerciality, cluster и disposition schemas.
+- Добавлен пакетный анализ существующих RawSearchQuery с одним retry для invalid structured output.
+- Расширена `SearchIntent`; добавлена недеструктивная SQLite-совместимость для существующей базы.
+- Добавлены analyze-existing и queries preview API без scheduler automation.
+- `/ai` показывает Search Intelligence summary, фильтры и preview table.
+- Первый Wordstat sample подтвердил semantic noise: игровые, DIY, фото-инструменты и информационные запросы смешаны с коммерческим спросом.
+- Реальный GigaChat-анализ не выполнялся: credentials `NOT_CONFIGURED`.

@@ -20,3 +20,12 @@ Credentials хранятся только в локальном `backend/.env`.
 - Автоматические и фоновые запросы на Phase 1 запрещены.
 
 GigaChat, Webmaster и Metrika API не подключены.
+
+## GigaChat
+
+- Credentials: только локальные `GIGACHAT_CLIENT_ID` и `GIGACHAT_CLIENT_SECRET`.
+- Config: `AI_GIGACHAT_SCOPE`, `AI_GIGACHAT_MODEL`, `AI_GIGACHAT_BATCH_SIZE`.
+- OAuth token хранится только в памяти provider instance и не логируется.
+- States: `NOT_CONFIGURED`, `CONFIGURED`, `CONNECTED`, `ERROR`; credentials сами по себе дают только `CONFIGURED`.
+- Connection check использует список моделей, а analysis — JSON Schema structured output с Pydantic validation.
+- Реальный status: `NOT_CONFIGURED`; API-вызовы не выполнялись.

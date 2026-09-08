@@ -9,3 +9,9 @@ Scheduler запускается вместе с backend, но на FOUNDATION �
 `collectors/wordstat.py` инкапсулирует официальный REST API, authentication, timeout, retry, request budget и преобразование ответов в Pydantic schemas. API layer инициирует только явные запросы. GetTop сохраняет отдельные result/association записи в `RawSearchQuery`; request provenance остаётся в `source_payload`. GetDynamics раскладывает каждый период в строку `SearchDemandPoint`, пригодную для последующей SQL-аналитики.
 
 Bootstrap seeds хранятся отдельно в `backend/data/bootstrap_seeds.json` и не являются копией production content. Scheduler намеренно не содержит Wordstat jobs.
+
+## GigaChat Phase 2
+
+`providers/gigachat.py` получает короткоживущий OAuth token из Client ID/Secret, не логирует credentials/token и вызывает structured output `chat/completions`. `schemas/intelligence.py` ограничивает словари enum-значениями и confidence диапазоном 0–1. Batch size конфигурируется и ограничивается 20 фразами.
+
+`POST /api/intelligence/analyze-existing` выбирает только RawSearchQuery без SearchIntent, поэтому повторный запуск не создаёт дубли. Валидный batch сохраняется транзакционно; invalid output получает один retry, затем batch отмечается ошибкой без записи. `GET /api/intelligence/queries` формирует summary и фильтрованный preview. Scheduler в этом контуре не используется.

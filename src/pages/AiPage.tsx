@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { BrandMark } from '../components/BrandMark'
 
@@ -18,6 +18,15 @@ type TopResponse = {
   results: TopResult[]
   associations: TopResult[]
 }
+type IntelligenceItem = {
+  raw_query_id: number; phrase: string; demand: number | null; source_type: string | null
+  intent: string; business_relevance: string; commerciality: string; cluster_name: string
+  disposition: string; confidence: number
+}
+type IntelligenceData = {
+  raw_queries: number; analyzed: number; ignored: number; watch: number
+  opportunity_candidates: number; clusters: number; items: IntelligenceItem[]
+}
 
 const apiUrl = (import.meta.env.VITE_AI_API_URL || 'http://localhost:8000').replace(/\/$/, '')
 
@@ -30,8 +39,55 @@ export const AiPage = () => {
   const [searching, setSearching] = useState(false)
   const [topData, setTopData] = useState<TopResponse | null>(null)
   const [message, setMessage] = useState('')
+  const [intelligence, setIntelligence] = useState<IntelligenceData | null>(null)
+  const [analyzing, setAnalyzing] = useState(false)
+  const [gigachatChecking, setGigachatChecking] = useState(false)
+  const [dispositionFilter, setDispositionFilter] = useState('')
+  const [clusterFilter, setClusterFilter] = useState('')
 
   const wordstat = integrations.find((integration) => integration.name === 'Wordstat')
+  const gigachat = integrations.find((integration) => integration.name === 'GigaChat')
+
+  const loadIntelligence = useCallback(async () => {
+    const params = new URLSearchParams()
+    if (dispositionFilter) params.set('disposition', dispositionFilter)
+    if (clusterFilter) params.set('cluster', clusterFilter)
+    const response = await fetch(`${apiUrl}/api/intelligence/queries?${params}`)
+    if (response.ok) setIntelligence(await response.json() as IntelligenceData)
+  }, [clusterFilter, dispositionFilter])
+
+  const analyzeExisting = async () => {
+    setAnalyzing(true)
+    setMessage('')
+    try {
+      const response = await fetch(`${apiUrl}/api/intelligence/analyze-existing`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ limit: 44 }),
+      })
+      const data = await response.json()
+      if (!response.ok) throw new Error(data.detail || 'GigaChat analysis failed')
+      setMessage(`Обработано: ${data.processed}. Batches: ${data.batches}.`)
+      await loadIntelligence()
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : 'Ошибка анализа.')
+    } finally {
+      setAnalyzing(false)
+    }
+  }
+
+  const checkGigaChat = async () => {
+    setGigachatChecking(true)
+    setMessage('')
+    try {
+      const response = await fetch(`${apiUrl}/api/integrations/gigachat/check`, { method: 'POST' })
+      const data = await response.json() as { status: string; message?: string }
+      setIntegrations((current) => current.map((item) => item.name === 'GigaChat' ? { ...item, status: data.status } : item))
+      if (data.message) setMessage(data.message)
+    } catch {
+      setMessage('Не удалось связаться с локальным backend.')
+    } finally {
+      setGigachatChecking(false)
+    }
+  }
 
   const checkWordstat = async () => {
     setChecking(true)
@@ -90,6 +146,10 @@ export const AiPage = () => {
       })
       .catch(() => setBackendOnline(false))
   }, [])
+
+  useEffect(() => {
+    if (backendOnline) void loadIntelligence()
+  }, [backendOnline, loadIntelligence])
 
   return (
     <div className="ai-page">
@@ -176,6 +236,34 @@ export const AiPage = () => {
               </div>
             </div>
           ) : null}
+        </section>
+
+        <section className="ai-intelligence">
+          <div className="ai-wordstat-heading">
+            <div><p className="eyebrow eyebrow-dark">Semantic layer</p><h2>Search Intelligence</h2></div>
+            <strong>{gigachat?.status || 'NOT_CONFIGURED'}</strong>
+          </div>
+          <div className="ai-intelligence-stats">
+            <span>Raw <strong>{intelligence?.raw_queries ?? 0}</strong></span>
+            <span>Analyzed <strong>{intelligence?.analyzed ?? 0}</strong></span>
+            <span>Opportunity <strong>{intelligence?.opportunity_candidates ?? 0}</strong></span>
+            <span>Watch <strong>{intelligence?.watch ?? 0}</strong></span>
+            <span>Ignored <strong>{intelligence?.ignored ?? 0}</strong></span>
+            <span>Clusters <strong>{intelligence?.clusters ?? 0}</strong></span>
+          </div>
+          <button className="button button-dark" onClick={checkGigaChat} disabled={!backendOnline || gigachatChecking}>
+            {gigachatChecking ? 'Проверяем…' : 'Проверить GigaChat'}
+          </button>
+          {gigachat?.status === 'CONNECTED' ? (
+            <button className="button button-dark ai-action-secondary" onClick={analyzeExisting} disabled={analyzing}>
+              {analyzing ? 'Анализируем…' : 'Анализировать существующие запросы'}
+            </button>
+          ) : null}
+          <div className="ai-intelligence-filters">
+            <label>Disposition<select value={dispositionFilter} onChange={(event) => setDispositionFilter(event.target.value)}><option value="">Все</option><option>OPPORTUNITY_CANDIDATE</option><option>WATCH</option><option>IGNORE</option></select></label>
+            <label>Cluster<select value={clusterFilter} onChange={(event) => setClusterFilter(event.target.value)}><option value="">Все</option>{[...new Set(intelligence?.items.map((item) => item.cluster_name) || [])].map((cluster) => <option key={cluster}>{cluster}</option>)}</select></label>
+          </div>
+          <div className="ai-intelligence-table"><table><thead><tr><th>Phrase</th><th>Demand</th><th>Intent</th><th>Relevance</th><th>Cluster</th><th>Disposition</th><th>Confidence</th></tr></thead><tbody>{intelligence?.items.slice(0, 50).map((item) => <tr key={item.raw_query_id}><td>{item.phrase}</td><td>{item.demand}</td><td>{item.intent}</td><td>{item.business_relevance}</td><td>{item.cluster_name}</td><td>{item.disposition}</td><td>{Math.round(item.confidence * 100)}%</td></tr>)}</tbody></table></div>
         </section>
       </main>
     </div>

@@ -31,3 +31,7 @@ AI не изменяет production автоматически. Первый р�
 ## Decision 008 — Wordstat только по явному запросу
 
 Wordstat не подключается к scheduler на Phase 1. Каждый внешний запрос инициируется явно, а client ограничивает количество HTTP-попыток параметром `AI_WORDSTAT_MAX_REQUESTS_PER_RUN` с безопасным default 5. Это ограничивает расходы и исключает незаметный crawler.
+
+## Decision 009 — Типизированный пакетный intelligence
+
+GigaChat получает группы до `AI_GIGACHAT_BATCH_SIZE` запросов и возвращает JSON Schema output, валидируемый Pydantic. На невалидный ответ допускается один controlled retry; испорченный batch не сохраняется. Частотность передаётся только как evidence и не определяет opportunity автоматически.

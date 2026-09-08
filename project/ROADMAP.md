@@ -6,11 +6,11 @@
 
 ## Phase 1 — Market Data
 
-Статус: реализована техническая основа; ожидается ручная настройка credentials и первый подтверждённый запрос. Wordstat API, bootstrap seeds из текущих услуг, raw query storage, demand history.
+Статус: завершён первый контролируемый GetTop; сохранены 44 строки. Wordstat API, bootstrap seeds, raw query storage и demand history infrastructure готовы.
 
 ## Phase 2 — AI Intelligence
 
-GigaChat provider, normalization, intents, semantic clustering, relevance, opportunity detection.
+Статус: код готов, реальный запуск ожидает credentials. GigaChat provider, normalization, intents, semantic clustering, relevance и disposition classification.
 
 ## Phase 3 — Decision Engine
 
