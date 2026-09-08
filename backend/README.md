@@ -13,7 +13,9 @@ Copy-Item .env.example .env
 uvicorn app.main:app --reload --port 8000
 ```
 
-API: `GET /health`, `GET /api/integrations`. Документация: `http://localhost:8000/docs`.
+API: `GET /health`, `GET /api/integrations`, `POST /api/integrations/wordstat/check`, `POST /api/wordstat/top`, `POST /api/wordstat/dynamics`. Документация: `http://localhost:8000/docs`.
+
+Wordstat по умолчанию имеет статус `NOT_CONFIGURED`. После подготовки доступа заполните только локальный `.env`: `AI_WORDSTAT_API_KEY`, `AI_YANDEX_FOLDER_ID`. Лимит одного ручного запуска задаётся `AI_WORDSTAT_MAX_REQUESTS_PER_RUN` (по умолчанию 5). Scheduler не запускает Wordstat jobs.
 
 ## Проверки
 

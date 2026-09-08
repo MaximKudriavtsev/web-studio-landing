@@ -21,6 +21,20 @@ class RawSearchQuery(TimestampMixin, Base):
     source_payload: Mapped[dict | None] = mapped_column(JSON)
 
 
+class SearchDemandPoint(TimestampMixin, Base):
+    __tablename__ = "search_demand_points"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    phrase: Mapped[str] = mapped_column(String(500), index=True)
+    source: Mapped[str] = mapped_column(String(50), default="wordstat", index=True)
+    period: Mapped[str] = mapped_column(String(30), index=True)
+    period_date: Mapped[datetime] = mapped_column(DateTime(timezone=True), index=True)
+    count: Mapped[int] = mapped_column(Integer)
+    share: Mapped[float] = mapped_column(Float)
+    regions: Mapped[list] = mapped_column(JSON, default=list)
+    device: Mapped[str] = mapped_column(String(100))
+    collected_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), index=True)
+
+
 class SearchIntent(TimestampMixin, Base):
     __tablename__ = "search_intents"
     id: Mapped[int] = mapped_column(primary_key=True)

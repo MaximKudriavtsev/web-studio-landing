@@ -1,3 +1,3 @@
-from app.models.entities import AIAction, Opportunity, RawSearchQuery, SearchIntent, Trend
+from app.models.entities import AIAction, Opportunity, RawSearchQuery, SearchDemandPoint, SearchIntent, Trend
 
-__all__ = ["AIAction", "Opportunity", "RawSearchQuery", "SearchIntent", "Trend"]
+__all__ = ["AIAction", "Opportunity", "RawSearchQuery", "SearchDemandPoint", "SearchIntent", "Trend"]

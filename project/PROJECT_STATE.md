@@ -2,7 +2,7 @@
 
 - Название: **КОТ ДЕЛА**
 - Repository: `MaximKudriavtsev/web-studio-landing`
-- AI Growth Engine stage: `FOUNDATION`
+- AI Growth Engine stage: `MARKET_DATA`
 - Environment: `LOCAL_EXPERIMENT`
 - Production AI deployment: `NONE`
 - Основной режим: `APPROVAL`
@@ -17,6 +17,7 @@
 
 - Backend, database, CMS и Docker отсутствовали.
 - В стадии FOUNDATION добавлен отдельный локальный backend-каркас и SQLite infrastructure.
+- В Phase 1 добавлен официальный Wordstat REST adapter, ручная проверка подключения, технические endpoints и SQL-хранение сырых запросов и временного ряда спроса.
 
 ## Текущие услуги
 
@@ -33,3 +34,5 @@
 - Metrika — `NOT_CONFIGURED_FOR_AI_ENGINE`
 
 Frontend-код Метрики не является готовой backend-интеграцией AI Growth Engine.
+
+Wordstat credentials в текущей среде отсутствуют. Scheduler не выполняет Wordstat-запросы; все платные обращения запускаются явно.

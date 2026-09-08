@@ -2,11 +2,11 @@
 
 ## Phase 0 — Foundation
 
-Проектная память, рабочая ветка, backend skeleton, database, health API, integration registry и локальный запуск.
+Статус: завершено. Проектная память, рабочая ветка, backend skeleton, database, health API, integration registry и локальный запуск.
 
 ## Phase 1 — Market Data
 
-Wordstat API, seed generation из текущих услуг, raw query storage, demand history.
+Статус: реализована техническая основа; ожидается ручная настройка credentials и первый подтверждённый запрос. Wordstat API, bootstrap seeds из текущих услуг, raw query storage, demand history.
 
 ## Phase 2 — AI Intelligence
 
