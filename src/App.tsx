@@ -11,6 +11,9 @@ const PrivacyPage = lazy(() =>
 const ConsentPage = lazy(() =>
   import('./pages/ConsentPage').then((m) => ({ default: m.ConsentPage })),
 )
+const AiPage = lazy(() =>
+  import('./pages/AiPage').then((m) => ({ default: m.AiPage })),
+)
 const NotFoundPage = lazy(() =>
   import('./pages/NotFoundPage').then((m) => ({ default: m.NotFoundPage })),
 )
@@ -36,6 +39,7 @@ export const App = () => {
             <Route path="personal-data" element={<Navigate to="/consent" replace />} />
           </Route>
           <Route element={<Layout hideChrome />}>
+            <Route path="ai" element={<AiPage />} />
             <Route path="privacy" element={<PrivacyPage />} />
             <Route path="consent" element={<ConsentPage />} />
             <Route path="*" element={<NotFoundPage />} />

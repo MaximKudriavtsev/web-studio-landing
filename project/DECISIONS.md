@@ -1,0 +1,29 @@
+# Архитектурные решения
+
+## Decision 001 — Отдельный backend-контур
+
+AI Growth Engine создаётся отдельно от React frontend из-за секретов, background jobs, database, API integrations и автономных процессов.
+
+## Decision 002 — Локальный MVP
+
+MVP запускается на ноутбуке, а не на production hosting: это безопасный эксперимент, не создающий риск для действующего сайта и слабого/shared hosting.
+
+## Decision 003 — Простой стек MVP
+
+FastAPI, SQLite, SQLAlchemy и scheduler. На первом этапе без Docker, Redis, PostgreSQL, LangGraph и микросервисов.
+
+## Decision 004 — Только APPROVAL
+
+AI не изменяет production автоматически. Первый режим — `APPROVAL`.
+
+## Decision 005 — Первый внешний контур
+
+Первый контур исследования — `Wordstat + GigaChat`. Webmaster и Metrika подключаются позднее как feedback/measurement layer.
+
+## Decision 006 — Граница применения LLM
+
+Обычный код выполняет арифметику, проценты и baseline calculations. LLM используется для смысла, intents, clustering, интерпретации, ограниченных решений и генерации контента.
+
+## Decision 007 — Markdown как постоянная память
+
+Все существенные решения и изменения фиксируются в Markdown-документации проекта.
