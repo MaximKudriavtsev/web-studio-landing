@@ -31,3 +31,9 @@ Calibrated schema ограничивает `cluster` восемью стабил
 V2 просит LLM вернуть только `primary_goal`, backward-compatible intent, relevance, commerciality, subtopic, ambiguity, breadth, specificity, confidence и reasoning. `app/intelligence/routing.py` затем применяет precedence: irrelevant other → irrelevant tools → AI website tools → DIY/no-code → calibrated broad service terms → informational → niche product → design → verified service demand. `WEB_DEVELOPMENT_SERVICES` не используется как fallback.
 
 Disposition вычисляется после routing. Opportunity требует BUY_SERVICE/уверенный HIRE_SPECIALIST, HIGH relevance, non-LOW commerciality, non-HIGH ambiguity и service cluster. Versioned calibration rows сохраняют V1 и V2 рядом; unique constraint запрещает дубли одной версии.
+
+## Phase 3 Opportunity Engine
+
+Site inventory строится без crawler из routes и `src/content/site.ts`. Четыре service sections на `/#services` покрывают business websites, web applications, UX/UI и redesign; отсутствие отдельных service pages означает PARTIAL coverage.
+
+Opportunity builder читает только V2 non-IGNORE rows, агрегирует evidence по стабильному cluster, сопоставляет coverage и сохраняет `PROPOSED_V1` идемпотентно. Priority — HIGH/MEDIUM/LOW с причинами; high frequency без commercial evidence не даёт HIGH. Engine остаётся advisory/approval-only.

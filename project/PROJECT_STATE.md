@@ -23,6 +23,7 @@
 - Первый intelligence baseline обработал 44/44 запросов. Phase 2.1 calibration сохраняется отдельно от baseline: 44/44 строк, 35 старых свободных кластеров сведены к 3 top-level clusters, 15 disposition изменились.
 - Calibration устранила почти уникальные названия кластеров, но выявила over-broad routing: 35 из 44 запросов попали в `WEB_DEVELOPMENT_SERVICES`, включая часть DIY/irrelevant cases. До Opportunity Engine нужна следующая итерация правил taxonomy; повторный run не выполнялся.
 - Phase 2.2 разделила LLM semantic analysis, deterministic taxonomy routing и disposition gate. V1 и V2 сосуществуют; V2 использовала 7 из 8 taxonomy clusters с распределением 3/6/7/11/7/1/1/8 и больше не имеет доминирующего catch-all cluster.
+- Phase 3 построила repository-based site inventory и первый deterministic Opportunity Build только из V2: 5 advisory opportunities. Главная страница содержит четыре service sections, но отдельных service routes нет, поэтому coverage основных услуг оценивается как PARTIAL.
 
 ## Текущие услуги
 

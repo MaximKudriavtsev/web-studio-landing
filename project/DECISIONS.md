@@ -47,3 +47,7 @@ GigaChat-specific `httpx.Client` использует `trust_env=False`, пот�
 ## Decision 012 — Semantic analysis, routing и disposition разделены
 
 GigaChat V2 определяет только primary goal и semantic attributes. Закрытый deterministic router применяет документированный precedence к восьми taxonomy clusters, после чего отдельный gate вычисляет disposition. Calibration version хранится вместе с model; уникальность `(raw_query_id, calibration_version)` позволяет сравнивать V1/V2 без перезаписи.
+
+## Decision 013 — Opportunities только из V2 и repository inventory
+
+Opportunity Engine агрегирует только non-IGNORE V2 evidence и сопоставляет его со статическим inventory, извлечённым из текущего repository без crawler. Build идемпотентен по `PROPOSED_V1`, priority дискретна и объяснима, а вывод всегда ограничен формулировкой «opportunities detected in the current search-demand sample».

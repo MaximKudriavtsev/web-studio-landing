@@ -27,6 +27,7 @@ type IntelligenceData = {
   raw_queries: number; analyzed: number; ignored: number; watch: number
   opportunity_candidates: number; clusters: number; items: IntelligenceItem[]
 }
+type GrowthOpportunity = { id:number; title:string; priority:string; opportunity_type:string; site_coverage:string; recommended_action:string; rationale:string; evidence_count:number; total_frequency_evidence:number; strongest_queries:{phrase:string;frequency:number}[] }
 
 const apiUrl = (import.meta.env.VITE_AI_API_URL || 'http://localhost:8000').replace(/\/$/, '')
 
@@ -44,6 +45,7 @@ export const AiPage = () => {
   const [gigachatChecking, setGigachatChecking] = useState(false)
   const [dispositionFilter, setDispositionFilter] = useState('')
   const [clusterFilter, setClusterFilter] = useState('')
+  const [opportunities, setOpportunities] = useState<GrowthOpportunity[]>([])
 
   const wordstat = integrations.find((integration) => integration.name === 'Wordstat')
   const gigachat = integrations.find((integration) => integration.name === 'GigaChat')
@@ -149,7 +151,10 @@ export const AiPage = () => {
   }, [])
 
   useEffect(() => {
-    if (backendOnline) void loadIntelligence()
+    if (backendOnline) {
+      void loadIntelligence()
+      void fetch(`${apiUrl}/api/opportunities`).then((response) => response.ok ? response.json() : null).then((data) => data && setOpportunities(data.items))
+    }
   }, [backendOnline, loadIntelligence])
 
   return (
@@ -265,6 +270,19 @@ export const AiPage = () => {
             <label>Cluster<select value={clusterFilter} onChange={(event) => setClusterFilter(event.target.value)}><option value="">Все</option>{[...new Set(intelligence?.items.map((item) => item.cluster_name) || [])].map((cluster) => <option key={cluster}>{cluster}</option>)}</select></label>
           </div>
           <div className="ai-intelligence-table"><table><thead><tr><th>Phrase</th><th>Demand</th><th>Intent</th><th>Relevance</th><th>Cluster</th><th>Disposition</th><th>Confidence</th></tr></thead><tbody>{intelligence?.items.slice(0, 50).map((item) => <tr key={item.raw_query_id}><td>{item.phrase}</td><td>{item.demand}</td><td>{item.intent}</td><td>{item.business_relevance}</td><td>{item.cluster_name}</td><td>{item.disposition}</td><td>{Math.round(item.confidence * 100)}%</td></tr>)}</tbody></table></div>
+        </section>
+
+        <section className="ai-intelligence">
+          <div className="ai-wordstat-heading"><div><p className="eyebrow eyebrow-dark">Advisory mode</p><h2>Growth Opportunities</h2></div><strong>APPROVAL</strong></div>
+          <p>Возможности обнаружены только в текущей экспериментальной выборке спроса «создание сайтов» и не описывают весь рынок.</p>
+          <div className="ai-status-grid">
+            {opportunities.map((item) => <article className="ai-status-card" key={item.id}>
+              <span>{item.priority} · {item.opportunity_type}</span><strong>{item.title}</strong>
+              <p>{item.rationale}</p><p>Coverage: {item.site_coverage} · Evidence: {item.evidence_count} · Frequency: {item.total_frequency_evidence.toLocaleString('ru-RU')}</p>
+              <p>Рекомендация: <strong>{item.recommended_action}</strong></p>
+              <ul>{item.strongest_queries.map((query) => <li key={query.phrase}>{query.phrase} — {query.frequency?.toLocaleString('ru-RU')}</li>)}</ul>
+            </article>)}
+          </div>
         </section>
       </main>
     </div>

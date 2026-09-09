@@ -7,6 +7,7 @@ from app.api.health import router as health_router
 from app.api.integrations import router as integrations_router
 from app.api.intelligence import router as intelligence_router
 from app.api.wordstat import router as wordstat_router
+from app.api.opportunities import router as opportunities_router
 from app.config import get_settings
 from app.db import init_db
 from app.scheduler import start_scheduler, stop_scheduler
@@ -33,3 +34,4 @@ app.include_router(health_router)
 app.include_router(integrations_router)
 app.include_router(intelligence_router)
 app.include_router(wordstat_router)
+app.include_router(opportunities_router)

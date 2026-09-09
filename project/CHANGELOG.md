@@ -39,3 +39,6 @@
 - Добавлен Semantic Routing V2: `primary_goal`, независимый `query_breadth`, deterministic routing precedence и отдельный disposition gate.
 - Calibration storage мигрирован на versioning с уникальностью `(raw_query_id, calibration_version)`; существующие 44 V1 сохранены, рядом добавлены 44 V2.
 - Единственный V2 run на GigaChat-3-Ultra использовал 7 из 8 taxonomy clusters; распределение disposition: 4 opportunity, 16 watch, 24 ignore. Новых Wordstat-запросов не выполнялось.
+- Добавлены repository-based SitePageInventory, idempotent `POST /api/opportunities/build`, фильтруемый `GET /api/opportunities` и `GET /api/site-inventory`.
+- Первый V2-only Opportunity Build создал 5 агрегированных advisory opportunities; IGNORE не создаёт активных записей, исходные evidence не изменяются.
+- Технический `/ai` дополнен блоком Growth Opportunities с priority, coverage, evidence, action и явным sample-scope disclaimer.

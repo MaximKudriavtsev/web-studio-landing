@@ -22,7 +22,7 @@
 
 ## Phase 3 — Decision Engine
 
-Opportunity scoring, allowed action types, `WATCH` / `DO_NOTHING`, reasoning summary, evidence, confidence.
+Статус: первый Opportunity Engine build завершён в advisory mode. Используются объяснимые HIGH/MEDIUM/LOW priority, site coverage и рекомендованные actions без pseudo-score. Следующие действия требуют approval.
 
 ## Phase 4 — Content Actions
 
