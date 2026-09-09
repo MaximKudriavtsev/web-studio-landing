@@ -19,3 +19,9 @@ Bootstrap seeds хранятся отдельно в `backend/data/bootstrap_see
 GigaChat TLS использует `ssl.create_default_context()` и при наличии `AI_GIGACHAT_CA_BUNDLE` добавляет локальный доверенный CA через `load_verify_locations()`. Системные CA сохраняются, certificate verification остаётся обязательной. `verify=False`, `CERT_NONE` и insecure fallback отсутствуют.
 
 GigaChat-specific `httpx.Client` создаётся с `trust_env=False`. Это локализованное решение для Windows-окружения, где environment-aware HTTPX path стабильно завершался `ConnectTimeout`, а прямой HTTPX path с тем же SSLContext успешно достигал API. Настройка не отключает и не обходит системный VPN/TUN, не ослабляет TLS и не отменяет проверку дополнительного CA; она исключает только environment variables/configuration из сетевого пути этого HTTPX client.
+
+## GigaChat Phase 2.1 Calibration
+
+`POST /api/intelligence/calibrate-existing` — одноразовый экспериментальный reanalysis mode для ровно 44 существующих RawSearchQuery и 44 baseline SearchIntent. Он не вызывает Wordstat и не перезаписывает baseline. Результаты сохраняются в отдельной `SearchIntentCalibration` с unique constraint по `raw_query_id`; повторный запуск получает conflict.
+
+Calibrated schema ограничивает `cluster` восемью стабильными enum-категориями и отдельно хранит `subtopic`, `ambiguity` и `query_specificity`. Pydantic запрещает `OPPORTUNITY_CANDIDATE`, если relevance ниже MEDIUM, commerciality LOW или ambiguity HIGH. Высокая частотность не участвует в обходе gate.

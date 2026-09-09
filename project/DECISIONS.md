@@ -39,3 +39,7 @@ GigaChat получает группы до `AI_GIGACHAT_BATCH_SIZE` запро�
 ## Decision 010 — Изолированный сетевой путь GigaChat
 
 GigaChat-specific `httpx.Client` использует `trust_env=False`, потому что на текущем локальном Windows-окружении environment-aware HTTPX path приводит к `ConnectTimeout`, а прямой path с тем же проверяющим SSLContext достигает API. Решение не меняет Windows VPN/TUN или proxy settings, не отключает TLS verification и не обходит проверку CA; оно отключает только применение HTTPX environment variables/configuration для этого клиента.
+
+## Decision 011 — Calibration как отдельный immutable experiment
+
+Повторная intelligence-классификация не перезаписывает baseline `SearchIntent`: calibrated results сохраняются в `SearchIntentCalibration` с уникальной связью к `RawSearchQuery`. Endpoint требует ровно 44 baseline rows, запрещает повторную запись и использует закрытую taxonomy из восьми top-level clusters. `subtopic` остаётся конкретным, а opportunity gate валидируется Pydantic независимо от ответа модели.

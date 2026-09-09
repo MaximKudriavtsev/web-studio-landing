@@ -10,7 +10,11 @@
 
 ## Phase 2 — AI Intelligence
 
-Статус: OAuth и получение списка моделей проверены; реальный analysis запуск отдельно не разрешался. GigaChat provider, normalization, intents, semantic clustering, relevance и disposition classification готовы.
+Статус: OAuth, список моделей и первый controlled analysis по 44 строкам проверены. GigaChat provider, normalization, intents, semantic clustering, relevance и disposition classification готовы.
+
+## Phase 2.1 — Intelligence Calibration
+
+Статус: первый controlled calibration run завершён на тех же 44 RawSearchQuery. Добавлены закрытая taxonomy, subtopic, ambiguity, specificity и opportunity gate; baseline сохранён. Требуется ещё одна отдельная итерация калибровки taxonomy routing перед Phase 3: текущий результат чрезмерно концентрируется в `WEB_DEVELOPMENT_SERVICES`.
 
 ## Phase 3 — Decision Engine
 

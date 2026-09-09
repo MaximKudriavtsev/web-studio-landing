@@ -10,10 +10,10 @@ from app.api import intelligence as intelligence_api
 from app.config import get_settings
 from app.db import Base, get_db
 from app.main import app
-from app.models import RawSearchQuery, SearchIntent
+from app.models import RawSearchQuery, SearchIntent, SearchIntentCalibration
 from app.providers.gigachat import GigaChatClient, GigaChatStructuredOutputError
 from app.providers.gigachat import GigaChatError, create_gigachat_ssl_context
-from app.schemas.intelligence import IntelligenceBatch, QueryInput
+from app.schemas.intelligence import CalibratedQueryIntelligence, CalibrationBatch, IntelligenceBatch, QueryInput
 
 
 def response_item(raw_id: int, disposition: str, cluster: str) -> dict:
@@ -28,6 +28,46 @@ def response_item(raw_id: int, disposition: str, cluster: str) -> dict:
         "confidence": 0.9,
         "reason": "Validated classification",
     }
+
+
+def calibrated_item(raw_id: int, phrase: str) -> dict:
+    is_official = phrase == "создание официального сайта"
+    is_website = phrase == "website"
+    return {
+        "raw_query_id": raw_id,
+        "normalized_query": phrase,
+        "intent": "COMMERCIAL",
+        "business_relevance": "HIGH",
+        "commerciality": "MEDIUM",
+        "cluster": "WEB_DEVELOPMENT_SERVICES",
+        "subtopic": "official website" if is_official else "general website",
+        "ambiguity": "HIGH" if is_website else "LOW" if is_official else "MEDIUM",
+        "query_specificity": "LOW" if is_website else "HIGH" if is_official else "MEDIUM",
+        "disposition": "WATCH" if is_website else "OPPORTUNITY_CANDIDATE",
+        "confidence": 0.9,
+        "reason": "Calibration regression case",
+    }
+
+
+def test_calibration_taxonomy_ambiguity_and_opportunity_gate() -> None:
+    website = CalibratedQueryIntelligence.model_validate(calibrated_item(1, "website"))
+    official = CalibratedQueryIntelligence.model_validate(calibrated_item(2, "создание официального сайта"))
+    assert website.ambiguity.value == "HIGH"
+    assert website.disposition.value == "WATCH"
+    assert official.ambiguity.value == "LOW"
+    assert official.query_specificity.value == "HIGH"
+
+    invalid_cluster = calibrated_item(3, "test") | {"cluster": "MODEL_INVENTED_CLUSTER"}
+    with pytest.raises(ValueError):
+        CalibratedQueryIntelligence.model_validate(invalid_cluster)
+
+    high_ambiguity_opportunity = calibrated_item(4, "test") | {"ambiguity": "HIGH"}
+    with pytest.raises(ValueError, match="high ambiguity"):
+        CalibratedQueryIntelligence.model_validate(high_ambiguity_opportunity)
+
+    diy_opportunity = calibrated_item(5, "test") | {"intent": "DIY", "commerciality": "LOW"}
+    with pytest.raises(ValueError, match="non-LOW commerciality"):
+        CalibratedQueryIntelligence.model_validate(diy_opportunity)
 
 
 def test_additional_ca_is_loaded_with_verification_enabled(tmp_path, monkeypatch: pytest.MonkeyPatch) -> None:
@@ -230,6 +270,52 @@ def test_persistence_categories_raw_evidence_and_no_duplicates(tmp_path, monkeyp
         with Session(engine) as session:
             assert session.scalar(select(func.count()).select_from(RawSearchQuery)) == 3
             assert session.scalar(select(func.count()).select_from(SearchIntent)) == 3
+    finally:
+        app.dependency_overrides.clear()
+        engine.dispose()
+
+
+def test_calibration_preserves_baseline_and_raw_evidence(tmp_path, monkeypatch: pytest.MonkeyPatch) -> None:
+    engine = create_engine(f"sqlite:///{(tmp_path / 'calibration.db').as_posix()}")
+    Base.metadata.create_all(engine)
+    TestSession = sessionmaker(bind=engine, expire_on_commit=False)
+    original = []
+    with TestSession() as session:
+        for raw_id in range(1, 45):
+            phrase = "website" if raw_id == 1 else "создание официального сайта" if raw_id == 2 else f"query {raw_id}"
+            raw = RawSearchQuery(query=phrase, demand=100 - raw_id, collected_at=__import__("datetime").datetime.now(__import__("datetime").UTC), source_payload={"result_type": "result"})
+            session.add(raw)
+            session.flush()
+            session.add(SearchIntent(raw_query_id=raw.id, normalized_query=phrase, intent="COMMERCIAL", business_relevance="HIGH", commerciality="MEDIUM", cluster_name=f"old-{raw_id}", disposition="WATCH", confidence=0.5, reasoning="old"))
+            original.append((raw.id, raw.query, raw.demand, dict(raw.source_payload)))
+        session.commit()
+
+    def override_db():
+        with TestSession() as session:
+            yield session
+
+    class FakeClient:
+        def calibrate_batch(self, queries: list[QueryInput]) -> CalibrationBatch:
+            return CalibrationBatch.model_validate({"items": [calibrated_item(query.raw_query_id, query.phrase) for query in queries]})
+
+        def close(self) -> None:
+            pass
+
+    monkeypatch.setattr(intelligence_api, "create_gigachat_client", lambda: FakeClient())
+    app.dependency_overrides[get_db] = override_db
+    try:
+        with TestClient(app) as client:
+            response = client.post("/api/intelligence/calibrate-existing", json={"limit": 44})
+            repeated = client.post("/api/intelligence/calibrate-existing", json={"limit": 44})
+        assert response.status_code == 200
+        assert response.json()["processed"] == 44
+        assert repeated.status_code == 409
+        with TestSession() as session:
+            current = [(row.id, row.query, row.demand, row.source_payload) for row in session.scalars(select(RawSearchQuery).order_by(RawSearchQuery.id))]
+            assert current == original
+            assert session.scalar(select(func.count()).select_from(SearchIntent)) == 44
+            assert session.scalar(select(func.count()).select_from(SearchIntentCalibration)) == 44
+            assert session.scalar(select(SearchIntentCalibration.subtopic).where(SearchIntentCalibration.raw_query_id == 2)) == "official website"
     finally:
         app.dependency_overrides.clear()
         engine.dispose()

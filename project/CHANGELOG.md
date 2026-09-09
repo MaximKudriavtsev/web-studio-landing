@@ -33,3 +33,6 @@
 - Добавлена безопасная поддержка дополнительного CA bundle для GigaChat поверх стандартного SSL trust store; локальные сертификаты исключены из Git.
 - GigaChat HTTP client изолирован от environment-aware HTTPX path через `trust_env=False`; TLS verification и дополнительный CA остаются обязательными.
 - Реальная проверка GigaChat подтверждена: OAuth и `GET /v1/models` вернули HTTP 200, configured model доступна; `chat/completions` не выполнялся.
+- Добавлен Phase 2.1 calibration mode: закрытая taxonomy из восьми кластеров, `subtopic`, `ambiguity`, `query_specificity` и валидируемый opportunity gate.
+- Calibrated results хранятся отдельно от исходного `SearchIntent`; повторная calibration блокируется, RawSearchQuery evidence не изменяется.
+- Первый controlled calibration run на GigaChat-3-Ultra обработал 44/44 строк: 35 → 3 top-level clusters, 15 disposition changes. Зафиксирован calibration gap — чрезмерная концентрация в `WEB_DEVELOPMENT_SERVICES`; переход к Opportunity Engine отложен.

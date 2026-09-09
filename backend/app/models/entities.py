@@ -50,6 +50,24 @@ class SearchIntent(TimestampMixin, Base):
     raw_query: Mapped[RawSearchQuery | None] = relationship()
 
 
+class SearchIntentCalibration(TimestampMixin, Base):
+    __tablename__ = "search_intent_calibrations"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    raw_query_id: Mapped[int] = mapped_column(ForeignKey("raw_search_queries.id"), unique=True, index=True)
+    normalized_query: Mapped[str] = mapped_column(String(500))
+    intent: Mapped[str] = mapped_column(String(100), index=True)
+    business_relevance: Mapped[str] = mapped_column(String(20), index=True)
+    commerciality: Mapped[str] = mapped_column(String(20))
+    cluster_name: Mapped[str] = mapped_column(String(50), index=True)
+    subtopic: Mapped[str] = mapped_column(String(250), index=True)
+    ambiguity: Mapped[str] = mapped_column(String(20), index=True)
+    query_specificity: Mapped[str] = mapped_column(String(20), index=True)
+    disposition: Mapped[str] = mapped_column(String(40), index=True)
+    confidence: Mapped[float] = mapped_column(Float)
+    reasoning: Mapped[str] = mapped_column(Text)
+    raw_query: Mapped[RawSearchQuery] = relationship()
+
+
 class Trend(TimestampMixin, Base):
     __tablename__ = "trends"
     id: Mapped[int] = mapped_column(primary_key=True)

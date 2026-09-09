@@ -7,7 +7,7 @@ from uuid import uuid4
 import httpx
 from pydantic import ValidationError
 
-from app.schemas.intelligence import IntelligenceBatch, QueryInput
+from app.schemas.intelligence import CalibrationBatch, IntelligenceBatch, QueryInput
 
 
 class GigaChatError(Exception):
@@ -40,6 +40,15 @@ SYSTEM_PROMPT = """Ты классификатор поискового спро
 Шум (игры, фото-инструменты, карточки, r34, история интернета) помечай IGNORE.
 Бесплатные/DIY запросы обычно WATCH или IGNORE, но не OPPORTUNITY_CANDIDATE.
 Верни ровно один объект по переданной JSON Schema и сохрани каждый raw_query_id без изменений."""
+
+CALIBRATION_PROMPT = """Ты выполняешь калиброванную классификацию поискового спроса digital-агентства «КОТ ДЕЛА».
+Направления: сайты для бизнеса; приложения и личные кабинеты; UX/UI и дизайн-системы; редизайн и развитие.
+Поле cluster выбирай ТОЛЬКО из закрытой taxonomy JSON Schema. subtopic используй для конкретного смысла запроса.
+Оцени ambiguity и query_specificity независимо от частотности. Широкие запросы вроде website имеют HIGH ambiguity и LOW specificity.
+OPPORTUNITY_CANDIDATE разрешён только при business_relevance HIGH или обоснованном MEDIUM, commerciality не LOW и ambiguity не HIGH.
+Потенциально интересный, но неоднозначный запрос помечай WATCH. Бесплатные/DIY и нерелевантный шум не могут быть opportunity.
+Калибровка: создание сайта допустимо opportunity; создание официального сайта — LOW ambiguity и strong opportunity; веб разработка допустимо opportunity; website — WATCH/HIGH ambiguity; веб разработчик учитывает job/education/hiring ambiguity и не является автоматическим opportunity; создание сайта онлайн учитывает builder/DIY ambiguity; создание сайта бесплатно — IGNORE; ии для создания сайтов — WATCH; майнкрафт сайт создание — IGNORE.
+Верни ровно один объект по JSON Schema и сохрани каждый raw_query_id без изменений."""
 
 
 class GigaChatClient:
@@ -152,3 +161,41 @@ class GigaChatClient:
                 last_error = exc
                 payload["messages"].append({"role": "user", "content": "Исправь ответ: верни валидный JSON строго по схеме и ровно для всех raw_query_id."})
         raise GigaChatStructuredOutputError("GigaChat returned invalid structured output after one retry") from last_error
+
+    def calibrate_batch(self, queries: list[QueryInput]) -> CalibrationBatch:
+        schema = CalibrationBatch.model_json_schema()
+        payload = {
+            "model": self.model,
+            "messages": [
+                {"role": "system", "content": CALIBRATION_PROMPT},
+                {"role": "user", "content": json.dumps([item.model_dump() for item in queries], ensure_ascii=False)},
+            ],
+            "response_format": {"type": "json_schema", "schema": schema, "strict": True},
+            "temperature": 0.1,
+        }
+        last_error: Exception | None = None
+        for _ in range(2):
+            try:
+                response = self._client.post(f"{self.API_URL}/chat/completions", headers=self._headers(), json=payload)
+            except httpx.TimeoutException as exc:
+                raise GigaChatError("GigaChat calibration timed out") from exc
+            except httpx.RequestError as exc:
+                raise GigaChatError("GigaChat connection failed") from exc
+            if response.status_code in (401, 403):
+                raise GigaChatError("GigaChat authentication or access denied")
+            if response.status_code == 429:
+                raise GigaChatError("GigaChat rate limit exceeded")
+            if response.is_error:
+                raise GigaChatError(f"GigaChat calibration failed with HTTP {response.status_code}")
+            try:
+                content = response.json()["choices"][0]["message"]["content"]
+                parsed = CalibrationBatch.model_validate_json(content)
+                expected_ids = {item.raw_query_id for item in queries}
+                actual_ids = {item.raw_query_id for item in parsed.items}
+                if expected_ids != actual_ids or len(parsed.items) != len(queries):
+                    raise ValueError("response IDs do not match the batch")
+                return parsed
+            except (KeyError, IndexError, TypeError, ValueError, ValidationError) as exc:
+                last_error = exc
+                payload["messages"].append({"role": "user", "content": "Исправь ответ: соблюдай taxonomy, opportunity gate и JSON Schema для всех raw_query_id."})
+        raise GigaChatStructuredOutputError("GigaChat returned invalid calibrated output after one retry") from last_error

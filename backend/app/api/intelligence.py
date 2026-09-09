@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 
 from app.config import get_settings
 from app.db import get_db
-from app.models import RawSearchQuery, SearchIntent
+from app.models import RawSearchQuery, SearchIntent, SearchIntentCalibration
 from app.providers.gigachat import GigaChatClient, GigaChatError
 from app.schemas.intelligence import (
     AnalyzeRequest,
@@ -89,6 +89,72 @@ def analyze_existing(request: AnalyzeRequest, db: Session = Depends(get_db)) -> 
         watch=dispositions.count(Disposition.WATCH),
         ignored=dispositions.count(Disposition.IGNORE),
         clusters=len({item.cluster_name for item in analyzed}),
+        errors=errors,
+    )
+
+
+@router.post("/calibrate-existing", response_model=AnalyzeSummary)
+def calibrate_existing(request: AnalyzeRequest, db: Session = Depends(get_db)) -> AnalyzeSummary:
+    raw_count = db.scalar(select(func.count()).select_from(RawSearchQuery)) or 0
+    old_count = db.scalar(select(func.count()).select_from(SearchIntent)) or 0
+    calibration_count = db.scalar(select(func.count()).select_from(SearchIntentCalibration)) or 0
+    if raw_count != 44 or old_count != 44:
+        raise HTTPException(status_code=409, detail="Calibration requires exactly 44 raw queries with 44 baseline intents")
+    if request.limit != 44:
+        raise HTTPException(status_code=400, detail="Calibration limit must be 44")
+    if calibration_count:
+        raise HTTPException(status_code=409, detail="Calibration already exists and will not be overwritten")
+
+    rows = db.scalars(select(RawSearchQuery).order_by(RawSearchQuery.id)).all()
+    settings = get_settings()
+    batch_size = max(1, min(settings.gigachat_batch_size, 20))
+    client = create_gigachat_client()
+    analyzed = []
+    errors = 0
+    batch_count = 0
+    try:
+        for offset in range(0, len(rows), batch_size):
+            batch_count += 1
+            batch_rows = rows[offset:offset + batch_size]
+            inputs = [QueryInput(
+                raw_query_id=row.id,
+                phrase=row.query,
+                demand=row.demand,
+                source_type=(row.source_payload or {}).get("result_type"),
+            ) for row in batch_rows]
+            try:
+                result = client.calibrate_batch(inputs)
+            except GigaChatError:
+                errors += 1
+                continue
+            for item in result.items:
+                db.add(SearchIntentCalibration(
+                    raw_query_id=item.raw_query_id,
+                    normalized_query=item.normalized_query,
+                    intent=item.intent.value,
+                    business_relevance=item.business_relevance.value,
+                    commerciality=item.commerciality.value,
+                    cluster_name=item.cluster.value,
+                    subtopic=item.subtopic,
+                    ambiguity=item.ambiguity.value,
+                    query_specificity=item.query_specificity.value,
+                    disposition=item.disposition.value,
+                    confidence=item.confidence,
+                    reasoning=item.reason,
+                ))
+                analyzed.append(item)
+            db.commit()
+    finally:
+        client.close()
+
+    dispositions = [item.disposition for item in analyzed]
+    return AnalyzeSummary(
+        processed=len(analyzed),
+        batches=batch_count,
+        opportunity_candidates=dispositions.count(Disposition.OPPORTUNITY_CANDIDATE),
+        watch=dispositions.count(Disposition.WATCH),
+        ignored=dispositions.count(Disposition.IGNORE),
+        clusters=len({item.cluster for item in analyzed}),
         errors=errors,
     )
 

@@ -19,7 +19,9 @@
 - В стадии FOUNDATION добавлен отдельный локальный backend-каркас и SQLite infrastructure.
 - В Phase 1 добавлен официальный Wordstat REST adapter, ручная проверка подключения, технические endpoints и SQL-хранение сырых запросов и временного ряда спроса.
 - Первый GetTop `создание сайтов` сохранил 44 строки: 30 results и 14 associations. Выборка содержит значительный semantic noise.
-- В Phase 2 добавлен GigaChat intelligence layer. OAuth и список моделей проверены успешно; реальный анализ не запускался.
+- В Phase 2 добавлен GigaChat intelligence layer. OAuth, список моделей и первый controlled analysis подтверждены.
+- Первый intelligence baseline обработал 44/44 запросов. Phase 2.1 calibration сохраняется отдельно от baseline: 44/44 строк, 35 старых свободных кластеров сведены к 3 top-level clusters, 15 disposition изменились.
+- Calibration устранила почти уникальные названия кластеров, но выявила over-broad routing: 35 из 44 запросов попали в `WEB_DEVELOPMENT_SERVICES`, включая часть DIY/irrelevant cases. До Opportunity Engine нужна следующая итерация правил taxonomy; повторный run не выполнялся.
 
 ## Текущие услуги
 
