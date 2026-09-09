@@ -42,4 +42,8 @@ GigaChat-specific `httpx.Client` использует `trust_env=False`, пот�
 
 ## Decision 011 — Calibration как отдельный immutable experiment
 
-Повторная intelligence-классификация не перезаписывает baseline `SearchIntent`: calibrated results сохраняются в `SearchIntentCalibration` с уникальной связью к `RawSearchQuery`. Endpoint требует ровно 44 baseline rows, запрещает повторную запись и использует закрытую taxonomy из восьми top-level clusters. `subtopic` остаётся конкретным, а opportunity gate валидируется Pydantic независимо от ответа модели.
+Повторная intelligence-классификация не перезаписывает baseline `SearchIntent`: calibrated results сохраняются в `SearchIntentCalibration`. Endpoint требует ровно 44 baseline rows, запрещает повторную запись одной версии и использует закрытую taxonomy из восьми top-level clusters. `subtopic` остаётся конкретным, а opportunity gate валидируется Pydantic независимо от ответа модели.
+
+## Decision 012 — Semantic analysis, routing и disposition разделены
+
+GigaChat V2 определяет только primary goal и semantic attributes. Закрытый deterministic router применяет документированный precedence к восьми taxonomy clusters, после чего отдельный gate вычисляет disposition. Calibration version хранится вместе с model; уникальность `(raw_query_id, calibration_version)` позволяет сравнивать V1/V2 без перезаписи.

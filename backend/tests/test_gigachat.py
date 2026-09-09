@@ -13,7 +13,8 @@ from app.main import app
 from app.models import RawSearchQuery, SearchIntent, SearchIntentCalibration
 from app.providers.gigachat import GigaChatClient, GigaChatStructuredOutputError
 from app.providers.gigachat import GigaChatError, create_gigachat_ssl_context
-from app.schemas.intelligence import CalibratedQueryIntelligence, CalibrationBatch, IntelligenceBatch, QueryInput
+from app.intelligence.routing import route_semantics
+from app.schemas.intelligence import CalibratedQueryIntelligence, IntelligenceBatch, QueryInput, SemanticAnalysisBatch, SemanticQueryAnalysis
 
 
 def response_item(raw_id: int, disposition: str, cluster: str) -> dict:
@@ -39,9 +40,11 @@ def calibrated_item(raw_id: int, phrase: str) -> dict:
         "intent": "COMMERCIAL",
         "business_relevance": "HIGH",
         "commerciality": "MEDIUM",
+        "primary_goal": "BUY_SERVICE",
         "cluster": "WEB_DEVELOPMENT_SERVICES",
         "subtopic": "official website" if is_official else "general website",
         "ambiguity": "HIGH" if is_website else "LOW" if is_official else "MEDIUM",
+        "query_breadth": "BROAD" if is_website else "NARROW" if is_official else "MEDIUM",
         "query_specificity": "LOW" if is_website else "HIGH" if is_official else "MEDIUM",
         "disposition": "WATCH" if is_website else "OPPORTUNITY_CANDIDATE",
         "confidence": 0.9,
@@ -68,6 +71,44 @@ def test_calibration_taxonomy_ambiguity_and_opportunity_gate() -> None:
     diy_opportunity = calibrated_item(5, "test") | {"intent": "DIY", "commerciality": "LOW"}
     with pytest.raises(ValueError, match="non-LOW commerciality"):
         CalibratedQueryIntelligence.model_validate(diy_opportunity)
+
+
+def semantic_item(raw_id: int, phrase: str, goal: str = "BUY_SERVICE") -> dict:
+    item = calibrated_item(raw_id, phrase)
+    return {key: value for key, value in item.items() if key not in {"cluster", "disposition"}} | {"primary_goal": goal}
+
+
+@pytest.mark.parametrize(("phrase", "goal", "cluster"), [
+    ("создание сайта бесплатно", "DIY_BUILD", "DIY_NO_CODE"),
+    ("ии для создания сайтов", "FIND_TOOL", "AI_WEBSITE_TOOLS"),
+    ("что такое веб разработка", "LEARN", "INFORMATIONAL_WEB_DEV"),
+    ("сайт для создания фото", "FIND_TOOL", "IRRELEVANT_TOOLS"),
+    ("майнкрафт сайт создание", "OTHER", "IRRELEVANT_OTHER"),
+    ("кто создал интернет", "LEARN", "IRRELEVANT_OTHER"),
+    ("веб дизайн заказать", "BUY_SERVICE", "WEB_DESIGN_UX"),
+])
+def test_semantic_routing_precedence(phrase: str, goal: str, cluster: str) -> None:
+    analysis = SemanticQueryAnalysis.model_validate(semantic_item(1, phrase, goal))
+    assert route_semantics(phrase, analysis).cluster.value == cluster
+
+
+def test_breadth_is_independent_from_ambiguity_and_website_is_not_opportunity() -> None:
+    analysis = SemanticQueryAnalysis.model_validate(semantic_item(1, "website"))
+    routed = route_semantics("website", analysis)
+    assert routed.query_breadth.value == "BROAD"
+    assert routed.ambiguity.value == "HIGH"
+    assert routed.disposition.value != "OPPORTUNITY_CANDIDATE"
+
+    broad_service = SemanticQueryAnalysis.model_validate(semantic_item(2, "создание сайта", "LEARN") | {"ambiguity": "HIGH"})
+    routed_service = route_semantics("создание сайта", broad_service)
+    assert routed_service.cluster.value == "WEB_DEVELOPMENT_SERVICES"
+    assert routed_service.query_breadth.value == "BROAD"
+    assert routed_service.ambiguity.value == "MEDIUM"
+
+    free = SemanticQueryAnalysis.model_validate(semantic_item(3, "создание сайта бесплатно", "FIND_TOOL"))
+    routed_free = route_semantics("создание сайта бесплатно", free)
+    assert routed_free.cluster.value == "DIY_NO_CODE"
+    assert routed_free.disposition.value == "IGNORE"
 
 
 def test_additional_ca_is_loaded_with_verification_enabled(tmp_path, monkeypatch: pytest.MonkeyPatch) -> None:
@@ -287,6 +328,7 @@ def test_calibration_preserves_baseline_and_raw_evidence(tmp_path, monkeypatch: 
             session.add(raw)
             session.flush()
             session.add(SearchIntent(raw_query_id=raw.id, normalized_query=phrase, intent="COMMERCIAL", business_relevance="HIGH", commerciality="MEDIUM", cluster_name=f"old-{raw_id}", disposition="WATCH", confidence=0.5, reasoning="old"))
+            session.add(SearchIntentCalibration(raw_query_id=raw.id, calibration_version="V1", model="GigaChat-3-Ultra", normalized_query=phrase, intent="COMMERCIAL", primary_goal=None, business_relevance="HIGH", commerciality="MEDIUM", cluster_name="WEB_DEVELOPMENT_SERVICES", subtopic="v1", ambiguity="MEDIUM", query_breadth=None, query_specificity="MEDIUM", disposition="WATCH", confidence=0.5, reasoning="v1"))
             original.append((raw.id, raw.query, raw.demand, dict(raw.source_payload)))
         session.commit()
 
@@ -295,8 +337,8 @@ def test_calibration_preserves_baseline_and_raw_evidence(tmp_path, monkeypatch: 
             yield session
 
     class FakeClient:
-        def calibrate_batch(self, queries: list[QueryInput]) -> CalibrationBatch:
-            return CalibrationBatch.model_validate({"items": [calibrated_item(query.raw_query_id, query.phrase) for query in queries]})
+        def calibrate_batch(self, queries: list[QueryInput]) -> SemanticAnalysisBatch:
+            return SemanticAnalysisBatch.model_validate({"items": [semantic_item(query.raw_query_id, query.phrase) for query in queries]})
 
         def close(self) -> None:
             pass
@@ -314,8 +356,10 @@ def test_calibration_preserves_baseline_and_raw_evidence(tmp_path, monkeypatch: 
             current = [(row.id, row.query, row.demand, row.source_payload) for row in session.scalars(select(RawSearchQuery).order_by(RawSearchQuery.id))]
             assert current == original
             assert session.scalar(select(func.count()).select_from(SearchIntent)) == 44
-            assert session.scalar(select(func.count()).select_from(SearchIntentCalibration)) == 44
-            assert session.scalar(select(SearchIntentCalibration.subtopic).where(SearchIntentCalibration.raw_query_id == 2)) == "official website"
+            assert session.scalar(select(func.count()).select_from(SearchIntentCalibration)) == 88
+            versions = set(session.scalars(select(SearchIntentCalibration.calibration_version)))
+            assert versions == {"V1", "V2"}
+            assert session.scalar(select(SearchIntentCalibration.subtopic).where(SearchIntentCalibration.raw_query_id == 2, SearchIntentCalibration.calibration_version == "V2")) == "official website"
     finally:
         app.dependency_overrides.clear()
         engine.dispose()

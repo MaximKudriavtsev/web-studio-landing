@@ -7,7 +7,7 @@ from uuid import uuid4
 import httpx
 from pydantic import ValidationError
 
-from app.schemas.intelligence import CalibrationBatch, IntelligenceBatch, QueryInput
+from app.schemas.intelligence import IntelligenceBatch, QueryInput, SemanticAnalysisBatch
 
 
 class GigaChatError(Exception):
@@ -41,13 +41,12 @@ SYSTEM_PROMPT = """Ты классификатор поискового спро
 Бесплатные/DIY запросы обычно WATCH или IGNORE, но не OPPORTUNITY_CANDIDATE.
 Верни ровно один объект по переданной JSON Schema и сохрани каждый raw_query_id без изменений."""
 
-CALIBRATION_PROMPT = """Ты выполняешь калиброванную классификацию поискового спроса digital-агентства «КОТ ДЕЛА».
+CALIBRATION_PROMPT = """Ты выполняешь только semantic intent analysis поискового спроса digital-агентства «КОТ ДЕЛА».
 Направления: сайты для бизнеса; приложения и личные кабинеты; UX/UI и дизайн-системы; редизайн и развитие.
-Поле cluster выбирай ТОЛЬКО из закрытой taxonomy JSON Schema. subtopic используй для конкретного смысла запроса.
-Оцени ambiguity и query_specificity независимо от частотности. Широкие запросы вроде website имеют HIGH ambiguity и LOW specificity.
-OPPORTUNITY_CANDIDATE разрешён только при business_relevance HIGH или обоснованном MEDIUM, commerciality не LOW и ambiguity не HIGH.
-Потенциально интересный, но неоднозначный запрос помечай WATCH. Бесплатные/DIY и нерелевантный шум не могут быть opportunity.
-Калибровка: создание сайта допустимо opportunity; создание официального сайта — LOW ambiguity и strong opportunity; веб разработка допустимо opportunity; website — WATCH/HIGH ambiguity; веб разработчик учитывает job/education/hiring ambiguity и не является автоматическим opportunity; создание сайта онлайн учитывает builder/DIY ambiguity; создание сайта бесплатно — IGNORE; ии для создания сайтов — WATCH; майнкрафт сайт создание — IGNORE.
+Не выбирай business taxonomy и disposition: их определит отдельный deterministic router.
+Определи primary_goal, смысловой subtopic, ambiguity, query_breadth и query_specificity независимо от частотности.
+Broadness не равна ambiguity: «создание сайта» — BROAD/MEDIUM, «website» — BROAD/HIGH, «создание официального сайта» — NARROW/LOW, «что такое веб разработка» — MEDIUM/LOW.
+Калибровка primary_goal: официальный сайт — BUY_SERVICE; бесплатно — DIY_BUILD; AI/нейросеть для создания сайта — FIND_TOOL; определения — LEARN; фото/видео/презентации — FIND_TOOL; веб разработчик — HIRE_SPECIALIST либо LEARN по наиболее вероятному смыслу с MEDIUM/HIGH ambiguity.
 Верни ровно один объект по JSON Schema и сохрани каждый raw_query_id без изменений."""
 
 
@@ -162,8 +161,8 @@ class GigaChatClient:
                 payload["messages"].append({"role": "user", "content": "Исправь ответ: верни валидный JSON строго по схеме и ровно для всех raw_query_id."})
         raise GigaChatStructuredOutputError("GigaChat returned invalid structured output after one retry") from last_error
 
-    def calibrate_batch(self, queries: list[QueryInput]) -> CalibrationBatch:
-        schema = CalibrationBatch.model_json_schema()
+    def calibrate_batch(self, queries: list[QueryInput]) -> SemanticAnalysisBatch:
+        schema = SemanticAnalysisBatch.model_json_schema()
         payload = {
             "model": self.model,
             "messages": [
@@ -189,7 +188,7 @@ class GigaChatClient:
                 raise GigaChatError(f"GigaChat calibration failed with HTTP {response.status_code}")
             try:
                 content = response.json()["choices"][0]["message"]["content"]
-                parsed = CalibrationBatch.model_validate_json(content)
+                parsed = SemanticAnalysisBatch.model_validate_json(content)
                 expected_ids = {item.raw_query_id for item in queries}
                 actual_ids = {item.raw_query_id for item in parsed.items}
                 if expected_ids != actual_ids or len(parsed.items) != len(queries):
@@ -197,5 +196,5 @@ class GigaChatClient:
                 return parsed
             except (KeyError, IndexError, TypeError, ValueError, ValidationError) as exc:
                 last_error = exc
-                payload["messages"].append({"role": "user", "content": "Исправь ответ: соблюдай taxonomy, opportunity gate и JSON Schema для всех raw_query_id."})
+                payload["messages"].append({"role": "user", "content": "Исправь ответ: верни semantic fields строго по JSON Schema для всех raw_query_id."})
         raise GigaChatStructuredOutputError("GigaChat returned invalid calibrated output after one retry") from last_error

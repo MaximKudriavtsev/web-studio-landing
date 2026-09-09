@@ -4,11 +4,13 @@ from sqlalchemy.orm import Session
 
 from app.config import get_settings
 from app.db import get_db
+from app.intelligence.routing import route_semantics
 from app.models import RawSearchQuery, SearchIntent, SearchIntentCalibration
 from app.providers.gigachat import GigaChatClient, GigaChatError
 from app.schemas.intelligence import (
     AnalyzeRequest,
     AnalyzeSummary,
+    CalibrationRequest,
     Disposition,
     IntelligenceQueryList,
     IntelligenceQueryView,
@@ -94,16 +96,19 @@ def analyze_existing(request: AnalyzeRequest, db: Session = Depends(get_db)) -> 
 
 
 @router.post("/calibrate-existing", response_model=AnalyzeSummary)
-def calibrate_existing(request: AnalyzeRequest, db: Session = Depends(get_db)) -> AnalyzeSummary:
+def calibrate_existing(request: CalibrationRequest, db: Session = Depends(get_db)) -> AnalyzeSummary:
     raw_count = db.scalar(select(func.count()).select_from(RawSearchQuery)) or 0
     old_count = db.scalar(select(func.count()).select_from(SearchIntent)) or 0
-    calibration_count = db.scalar(select(func.count()).select_from(SearchIntentCalibration)) or 0
+    calibration_count = db.scalar(
+        select(func.count()).select_from(SearchIntentCalibration)
+        .where(SearchIntentCalibration.calibration_version == request.calibration_version)
+    ) or 0
     if raw_count != 44 or old_count != 44:
         raise HTTPException(status_code=409, detail="Calibration requires exactly 44 raw queries with 44 baseline intents")
     if request.limit != 44:
         raise HTTPException(status_code=400, detail="Calibration limit must be 44")
     if calibration_count:
-        raise HTTPException(status_code=409, detail="Calibration already exists and will not be overwritten")
+        raise HTTPException(status_code=409, detail="Calibration version already exists and will not be overwritten")
 
     rows = db.scalars(select(RawSearchQuery).order_by(RawSearchQuery.id)).all()
     settings = get_settings()
@@ -127,16 +132,22 @@ def calibrate_existing(request: AnalyzeRequest, db: Session = Depends(get_db)) -
             except GigaChatError:
                 errors += 1
                 continue
-            for item in result.items:
+            for semantic_item in result.items:
+                raw = next(row for row in batch_rows if row.id == semantic_item.raw_query_id)
+                item = route_semantics(raw.query, semantic_item)
                 db.add(SearchIntentCalibration(
                     raw_query_id=item.raw_query_id,
+                    calibration_version=request.calibration_version,
+                    model=settings.gigachat_model,
                     normalized_query=item.normalized_query,
                     intent=item.intent.value,
+                    primary_goal=item.primary_goal.value,
                     business_relevance=item.business_relevance.value,
                     commerciality=item.commerciality.value,
                     cluster_name=item.cluster.value,
                     subtopic=item.subtopic,
                     ambiguity=item.ambiguity.value,
+                    query_breadth=item.query_breadth.value,
                     query_specificity=item.query_specificity.value,
                     disposition=item.disposition.value,
                     confidence=item.confidence,

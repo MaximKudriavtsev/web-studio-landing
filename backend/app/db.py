@@ -27,6 +27,7 @@ def init_db() -> None:
     from app.models import entities  # noqa: F401
     Base.metadata.create_all(bind=engine)
     _add_search_intent_columns()
+    _migrate_calibration_versioning()
 
 
 def _add_search_intent_columns() -> None:
@@ -45,6 +46,60 @@ def _add_search_intent_columns() -> None:
         for name, sql_type in additions.items():
             if name not in existing:
                 connection.execute(text(f"ALTER TABLE search_intents ADD COLUMN {name} {sql_type}"))
+
+
+def _migrate_calibration_versioning() -> None:
+    """Preserve the Phase 2.1 rows while replacing their one-row-only constraint with versioning."""
+    if not database_url.startswith("sqlite"):
+        return
+    inspector = inspect(engine)
+    if "search_intent_calibrations_v1_legacy" in inspector.get_table_names():
+        with engine.begin() as connection:
+            current_count = connection.execute(text("SELECT COUNT(*) FROM search_intent_calibrations")).scalar() or 0
+            if current_count == 0:
+                connection.execute(text("""
+                    INSERT INTO search_intent_calibrations (
+                        id, raw_query_id, calibration_version, model, normalized_query, intent,
+                        primary_goal, business_relevance, commerciality, cluster_name, subtopic,
+                        ambiguity, query_breadth, query_specificity, disposition, confidence,
+                        reasoning, created_at, updated_at
+                    )
+                    SELECT id, raw_query_id, 'V1', 'GigaChat-3-Ultra', normalized_query, intent,
+                        NULL, business_relevance, commerciality, cluster_name, subtopic,
+                        ambiguity, NULL, query_specificity, disposition, confidence,
+                        reasoning, created_at, updated_at
+                    FROM search_intent_calibrations_v1_legacy
+                """))
+            connection.execute(text("DROP TABLE search_intent_calibrations_v1_legacy"))
+        return
+    if "search_intent_calibrations" not in inspector.get_table_names():
+        return
+    existing = {column["name"] for column in inspector.get_columns("search_intent_calibrations")}
+    if {"calibration_version", "model", "primary_goal", "query_breadth"}.issubset(existing):
+        return
+
+    from app.models import SearchIntentCalibration
+
+    legacy_indexes = [index["name"] for index in inspector.get_indexes("search_intent_calibrations")]
+    with engine.begin() as connection:
+        connection.execute(text("ALTER TABLE search_intent_calibrations RENAME TO search_intent_calibrations_v1_legacy"))
+        for index_name in legacy_indexes:
+            connection.execute(text(f'DROP INDEX IF EXISTS "{index_name}"'))
+        SearchIntentCalibration.__table__.create(bind=connection, checkfirst=False)
+        connection.execute(text("""
+            INSERT INTO search_intent_calibrations (
+                id, raw_query_id, calibration_version, model, normalized_query, intent,
+                primary_goal, business_relevance, commerciality, cluster_name, subtopic,
+                ambiguity, query_breadth, query_specificity, disposition, confidence,
+                reasoning, created_at, updated_at
+            )
+            SELECT id, raw_query_id, 'V1', 'GigaChat-3-Ultra', normalized_query, intent,
+                NULL, business_relevance, commerciality, cluster_name, subtopic,
+                ambiguity, NULL, query_specificity, disposition, confidence,
+                reasoning, created_at, updated_at
+            FROM search_intent_calibrations_v1_legacy
+        """))
+        connection.execute(text("DROP TABLE search_intent_calibrations_v1_legacy"))
 
 
 def get_db() -> Generator[Session, None, None]:

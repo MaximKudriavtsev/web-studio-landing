@@ -22,6 +22,12 @@ GigaChat-specific `httpx.Client` создаётся с `trust_env=False`. Это
 
 ## GigaChat Phase 2.1 Calibration
 
-`POST /api/intelligence/calibrate-existing` — одноразовый экспериментальный reanalysis mode для ровно 44 существующих RawSearchQuery и 44 baseline SearchIntent. Он не вызывает Wordstat и не перезаписывает baseline. Результаты сохраняются в отдельной `SearchIntentCalibration` с unique constraint по `raw_query_id`; повторный запуск получает conflict.
+`POST /api/intelligence/calibrate-existing` — versioned экспериментальный reanalysis mode для ровно 44 существующих RawSearchQuery и 44 baseline SearchIntent. Он не вызывает Wordstat и не перезаписывает baseline. Результаты сохраняются в отдельной `SearchIntentCalibration` с unique constraint по `(raw_query_id, calibration_version)`; повтор той же версии получает conflict.
 
 Calibrated schema ограничивает `cluster` восемью стабильными enum-категориями и отдельно хранит `subtopic`, `ambiguity` и `query_specificity`. Pydantic запрещает `OPPORTUNITY_CANDIDATE`, если relevance ниже MEDIUM, commerciality LOW или ambiguity HIGH. Высокая частотность не участвует в обходе gate.
+
+## Semantic Routing V2
+
+V2 просит LLM вернуть только `primary_goal`, backward-compatible intent, relevance, commerciality, subtopic, ambiguity, breadth, specificity, confidence и reasoning. `app/intelligence/routing.py` затем применяет precedence: irrelevant other → irrelevant tools → AI website tools → DIY/no-code → calibrated broad service terms → informational → niche product → design → verified service demand. `WEB_DEVELOPMENT_SERVICES` не используется как fallback.
+
+Disposition вычисляется после routing. Opportunity требует BUY_SERVICE/уверенный HIRE_SPECIALIST, HIGH relevance, non-LOW commerciality, non-HIGH ambiguity и service cluster. Versioned calibration rows сохраняют V1 и V2 рядом; unique constraint запрещает дубли одной версии.

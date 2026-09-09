@@ -36,3 +36,6 @@
 - Добавлен Phase 2.1 calibration mode: закрытая taxonomy из восьми кластеров, `subtopic`, `ambiguity`, `query_specificity` и валидируемый opportunity gate.
 - Calibrated results хранятся отдельно от исходного `SearchIntent`; повторная calibration блокируется, RawSearchQuery evidence не изменяется.
 - Первый controlled calibration run на GigaChat-3-Ultra обработал 44/44 строк: 35 → 3 top-level clusters, 15 disposition changes. Зафиксирован calibration gap — чрезмерная концентрация в `WEB_DEVELOPMENT_SERVICES`; переход к Opportunity Engine отложен.
+- Добавлен Semantic Routing V2: `primary_goal`, независимый `query_breadth`, deterministic routing precedence и отдельный disposition gate.
+- Calibration storage мигрирован на versioning с уникальностью `(raw_query_id, calibration_version)`; существующие 44 V1 сохранены, рядом добавлены 44 V2.
+- Единственный V2 run на GigaChat-3-Ultra использовал 7 из 8 taxonomy clusters; распределение disposition: 4 opportunity, 16 watch, 24 ignore. Новых Wordstat-запросов не выполнялось.

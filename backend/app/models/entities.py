@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import DateTime, Float, ForeignKey, Integer, JSON, String, Text, func
+from sqlalchemy import DateTime, Float, ForeignKey, Integer, JSON, String, Text, UniqueConstraint, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db import Base
@@ -52,15 +52,20 @@ class SearchIntent(TimestampMixin, Base):
 
 class SearchIntentCalibration(TimestampMixin, Base):
     __tablename__ = "search_intent_calibrations"
+    __table_args__ = (UniqueConstraint("raw_query_id", "calibration_version", name="uq_calibration_raw_version"),)
     id: Mapped[int] = mapped_column(primary_key=True)
-    raw_query_id: Mapped[int] = mapped_column(ForeignKey("raw_search_queries.id"), unique=True, index=True)
+    raw_query_id: Mapped[int] = mapped_column(ForeignKey("raw_search_queries.id"), index=True)
+    calibration_version: Mapped[str] = mapped_column(String(20), index=True)
+    model: Mapped[str] = mapped_column(String(100))
     normalized_query: Mapped[str] = mapped_column(String(500))
     intent: Mapped[str] = mapped_column(String(100), index=True)
+    primary_goal: Mapped[str | None] = mapped_column(String(40), index=True)
     business_relevance: Mapped[str] = mapped_column(String(20), index=True)
     commerciality: Mapped[str] = mapped_column(String(20))
     cluster_name: Mapped[str] = mapped_column(String(50), index=True)
     subtopic: Mapped[str] = mapped_column(String(250), index=True)
     ambiguity: Mapped[str] = mapped_column(String(20), index=True)
+    query_breadth: Mapped[str | None] = mapped_column(String(20), index=True)
     query_specificity: Mapped[str] = mapped_column(String(20), index=True)
     disposition: Mapped[str] = mapped_column(String(40), index=True)
     confidence: Mapped[float] = mapped_column(Float)

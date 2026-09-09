@@ -16,6 +16,10 @@
 
 Статус: первый controlled calibration run завершён на тех же 44 RawSearchQuery. Добавлены закрытая taxonomy, subtopic, ambiguity, specificity и opportunity gate; baseline сохранён. Требуется ещё одна отдельная итерация калибровки taxonomy routing перед Phase 3: текущий результат чрезмерно концентрируется в `WEB_DEVELOPMENT_SERVICES`.
 
+## Phase 2.2 — Semantic Routing V2
+
+Статус: завершено. Semantic intent, deterministic taxonomy router и disposition gate разделены; V2 сохранена рядом с V1 для 44/44 запросов. Использованы 7 из 8 кластеров, крайности V1 устранены. Переход к Phase 3 остаётся отдельным решением владельца.
+
 ## Phase 3 — Decision Engine
 
 Opportunity scoring, allowed action types, `WATCH` / `DO_NOTHING`, reasoning summary, evidence, confidence.
