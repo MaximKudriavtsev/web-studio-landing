@@ -141,6 +141,18 @@ class MarketIntelligence(TimestampMixin, Base):
     payload: Mapped[dict] = mapped_column(JSON)
 
 
+class StrategicHypothesis(TimestampMixin, Base):
+    __tablename__ = "strategic_hypotheses"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    title: Mapped[str] = mapped_column(String(250), unique=True)
+    service_line: Mapped[str] = mapped_column(String(40), index=True)
+    platform: Mapped[str] = mapped_column(String(40), index=True)
+    hypothesis_type: Mapped[str] = mapped_column(String(40), index=True)
+    status: Mapped[str] = mapped_column(String(40), index=True)
+    rationale: Mapped[str] = mapped_column(Text)
+    evidence_status: Mapped[str] = mapped_column(String(40), index=True)
+
+
 class AIAction(TimestampMixin, Base):
     __tablename__ = "ai_actions"
     id: Mapped[int] = mapped_column(primary_key=True)

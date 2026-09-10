@@ -55,3 +55,15 @@ Opportunity Engine агрегирует только non-IGNORE V2 evidence и �
 ## Decision 014 — Scan-scoped market evidence
 
 Каждый Market Scan имеет собственный ID. Phrase дедуплицируется внутри scan в MarketQuery, а каждое появление из seed/result/association сохраняется отдельным MarketEvidence. Production intelligence не имеет exact-44 ограничения и пишет versioned MarketIntelligence. Opportunities не смешивают scans; association не может самостоятельно дать HIGH, а одиночный BUY_SERVICE не создаёт service page.
+
+## Decision 015 — Service line и platform не расширяют top-level taxonomy
+
+Закрытая semantic taxonomy остаётся широкой. После semantic analysis детерминированный router независимо вычисляет продаваемую `service_line` и технологическую `platform`. Scan opportunities V2 агрегируются по этим измерениям и не перезаписывают предыдущие build versions.
+
+## Decision 016 — Стратегические направления отделены от market evidence
+
+`StrategicHypothesis` может существовать до исследования, но не становится `Opportunity` без evidence. Направление Яндекс KIT имеет статус `RESEARCH_REQUIRED`; seed pack зарегистрирован, но не запускался.
+
+## Decision 017 — Генерация подчиняется Site Design Contract
+
+Страница может собираться только из текущих tokens/components/layouts. Запрос недостающего primitive возвращает `DESIGN_EXTENSION_REQUIRED`; новые fonts, brand colors, button/radius/shadow systems, Header/Footer, navigation, container width и global spacing запрещены без approval.

@@ -8,6 +8,7 @@ from app.api.integrations import router as integrations_router
 from app.api.intelligence import router as intelligence_router
 from app.api.wordstat import router as wordstat_router
 from app.api.opportunities import router as opportunities_router
+from app.api.strategy import router as strategy_router
 from app.api.market_scans import router as market_scans_router
 from app.config import get_settings
 from app.db import init_db
@@ -37,3 +38,4 @@ app.include_router(intelligence_router)
 app.include_router(wordstat_router)
 app.include_router(opportunities_router)
 app.include_router(market_scans_router)
+app.include_router(strategy_router)

@@ -8,6 +8,7 @@ from app.collectors.wordstat import WordstatError
 from app.config import get_settings
 from app.db import get_db
 from app.intelligence.routing import route_semantics
+from app.intelligence.service_routing import route_service_dimensions
 from app.models import MarketEvidence, MarketIntelligence, MarketQuery, MarketScan
 from app.schemas.intelligence import QueryInput
 from app.schemas.wordstat import TopRequest
@@ -47,7 +48,7 @@ def analyze_scan(scan_id:int,db:Session=Depends(get_db)):
    try: result=client.calibrate_batch([QueryInput(raw_query_id=q.id,phrase=q.phrase,demand=None,source_type=None) for q in batch])
    except Exception as exc: errors.append({"query_ids":[q.id for q in batch],"error":type(exc).__name__}); continue
    for semantic in result.items:
-    query=next(q for q in batch if q.id==semantic.raw_query_id); routed=route_semantics(query.phrase,semantic); db.add(MarketIntelligence(scan_id=scan_id,market_query_id=query.id,version="V2",model=scan.model,payload=routed.model_dump(mode="json"))); processed+=1
+    query=next(q for q in batch if q.id==semantic.raw_query_id); routed=route_semantics(query.phrase,semantic); payload=routed.model_dump(mode="json"); service_line,platform=route_service_dimensions(query.phrase,payload["cluster"]); payload.update(service_line=service_line.value,platform=platform.value); db.add(MarketIntelligence(scan_id=scan_id,market_query_id=query.id,version="V2",model=scan.model,payload=payload)); processed+=1
    db.commit()
  finally: client.close()
  scan.intelligence_count=db.scalar(select(func.count()).select_from(MarketIntelligence).where(MarketIntelligence.scan_id==scan_id)) or 0; scan.status="ANALYZED" if scan.intelligence_count==scan.unique_query_count else "INTELLIGENCE_PARTIAL"; db.commit()

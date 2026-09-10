@@ -4,13 +4,48 @@ from sqlalchemy.orm import Session
 from app.db import get_db
 from app.models import MarketEvidence, MarketIntelligence, MarketQuery, MarketScan, Opportunity, RawSearchQuery, SearchIntentCalibration
 from app.inventory import build_site_inventory
+from app.intelligence.service_routing import Platform, ServiceLine, route_service_dimensions
 from app.schemas.opportunities import OpportunityList, OpportunityView, SitePageInventory
 
 router=APIRouter(tags=["opportunities"])
 SCOPE="opportunities detected in the current search-demand sample"
 
 def _view(row):
- p=row.evidence or {}; return OpportunityView(id=row.id,title=row.title,opportunity_type=p["opportunity_type"],cluster=p["cluster"],subtopic=p["subtopic"],status=row.status,priority=p["priority"],priority_reasons=p["priority_reasons"],evidence_count=p["evidence_count"],total_frequency_evidence=p["total_frequency_evidence"],strongest_queries=p["strongest_queries"],site_coverage=p["site_coverage"],recommended_action=p["recommended_action"],rationale=p["rationale"],scan_id=p.get("scan_id"),direct_results_count=p.get("direct_results_count",0),associations_count=p.get("associations_count",0))
+ p=row.evidence or {}; return OpportunityView(id=row.id,title=row.title,opportunity_type=p["opportunity_type"],cluster=p["cluster"],subtopic=p["subtopic"],status=row.status,priority=p["priority"],priority_reasons=p["priority_reasons"],evidence_count=p["evidence_count"],total_frequency_evidence=p["total_frequency_evidence"],strongest_queries=p["strongest_queries"],site_coverage=p["site_coverage"],recommended_action=p["recommended_action"],rationale=p["rationale"],scan_id=p.get("scan_id"),direct_results_count=p.get("direct_results_count",0),associations_count=p.get("associations_count",0),service_line=p.get("service_line","OTHER"),platform=p.get("platform","UNSPECIFIED"))
+
+SERVICE_COVERAGE = {
+ ServiceLine.GENERAL_WEBSITE.value: "PARTIAL", ServiceLine.CORPORATE_WEBSITE.value: "PARTIAL",
+ ServiceLine.ECOMMERCE.value: "PARTIAL", ServiceLine.WEB_APPLICATION.value: "PARTIAL",
+ ServiceLine.PERSONAL_ACCOUNT.value: "PARTIAL", ServiceLine.BUSINESS_AUTOMATION.value: "PARTIAL",
+ ServiceLine.UX_UI.value: "PARTIAL", ServiceLine.REDESIGN.value: "PARTIAL",
+}
+
+
+@router.post("/api/opportunities/build/{scan_id}/v2",response_model=OpportunityList)
+def build_for_scan_v2(scan_id:int,db:Session=Depends(get_db)):
+ status=f"SCAN_{scan_id}_PROPOSED_V2"
+ existing=db.scalars(select(Opportunity).where(Opportunity.status==status)).all()
+ if existing:return OpportunityList(sample_scope="service-line opportunities detected in this Market Scan sample",items=[_view(x) for x in existing])
+ scan=db.get(MarketScan,scan_id)
+ if not scan or scan.status not in {"ANALYZED","OPPORTUNITIES_BUILT"}:raise HTTPException(409,"Completed scan intelligence is required")
+ rows=db.execute(select(MarketQuery,MarketIntelligence).join(MarketIntelligence,MarketIntelligence.market_query_id==MarketQuery.id).where(MarketQuery.scan_id==scan_id)).all(); groups={}
+ for query,intel in rows:
+  payload=dict(intel.payload); service_line,platform=route_service_dimensions(query.phrase,payload["cluster"]); payload["service_line"]=service_line.value;payload["platform"]=platform.value
+  intel.payload=payload
+  if payload["disposition"]!="IGNORE":groups.setdefault((payload["cluster"],service_line.value,platform.value),[]).append((query,payload))
+ for (cluster,service_line,platform),pairs in groups.items():
+  qids=[q.id for q,_ in pairs]; evidence=list(db.scalars(select(MarketEvidence).where(MarketEvidence.scan_id==scan_id,MarketEvidence.market_query_id.in_(qids))))
+  direct=sum(e.source_type=="result" for e in evidence);assoc=sum(e.source_type=="association" for e in evidence);buy=sum(p["primary_goal"]=="BUY_SERVICE" for _,p in pairs);watch=sum(p["disposition"]=="WATCH" for _,p in pairs);coverage=SERVICE_COVERAGE.get(service_line,"NONE");count=len(pairs)
+  service_eligible=cluster in {"WEB_DEVELOPMENT_SERVICES","WEB_DESIGN_UX","NICHE_PRODUCT_DEVELOPMENT"} and service_line!=ServiceLine.OTHER.value
+  if buy and count>1 and coverage=="PARTIAL" and service_eligible:typ,action="EXISTING_PAGE_IMPROVEMENT","IMPROVE_EXISTING_PAGE"
+  elif buy and count>1 and service_eligible:typ,action="SERVICE_GAP","CREATE_SERVICE_PAGE"
+  else:typ,action="WATCH_TOPIC","WATCH"
+  priority="HIGH" if buy>=2 and direct>=2 and typ!="WATCH_TOPIC" else "MEDIUM" if buy or direct>=2 else "LOW"
+  strongest=sorted([{"phrase":e.phrase,"frequency":e.demand,"source_type":e.source_type,"seed":e.seed} for e in evidence],key=lambda x:x["frequency"],reverse=True)[:5]
+  payload={"scan_id":scan_id,"opportunity_type":typ,"cluster":cluster,"service_line":service_line,"platform":platform,"subtopic":pairs[0][1]["subtopic"],"priority":priority,"priority_reasons":[f"{direct} direct results",f"{assoc} associations",f"{buy} BUY_SERVICE queries",f"site coverage {coverage}"],"evidence_count":len(evidence),"direct_results_count":direct,"associations_count":assoc,"total_frequency_evidence":sum(e.demand for e in evidence),"strongest_queries":strongest,"site_coverage":coverage,"recommended_action":action,"rationale":"Service-line scoped Wordstat evidence; frequencies overlap and are not market size.","unique_queries":count,"buy_service_count":buy,"watch_count":watch}
+  title=service_line.replace("_"," ").title() + (f" · {platform.replace('_',' ').title()}" if platform!=Platform.UNSPECIFIED.value else "")
+  db.add(Opportunity(title=title,status=status,summary=payload["rationale"],evidence=payload))
+ db.commit();built=db.scalars(select(Opportunity).where(Opportunity.status==status)).all();return OpportunityList(sample_scope="service-line opportunities detected in this Market Scan sample",items=[_view(x) for x in built])
 
 @router.get("/api/site-inventory",response_model=list[SitePageInventory])
 def inventory(): return build_site_inventory()

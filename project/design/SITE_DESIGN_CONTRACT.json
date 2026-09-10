@@ -1,0 +1,28 @@
+{
+  "version": "1.0",
+  "source_files": ["src/styles/globals.css", "src/styles/kotdela.css", "src/components", "src/pages/HomePage.tsx"],
+  "tokens": {
+    "fonts": {"sans": "Manrope, Arial, sans-serif", "display": "Playfair Display, Georgia, serif"},
+    "font_weights": [400, 500, 600, 700, 800],
+    "colors": {"ink": "#121212", "paper": "#f4f0e8", "paper_2": "#ebe5da", "lime": "#c9ff55", "coral": "#ff8c6b", "blue": "#6ea6ff", "violet": "#9271ff", "sand": "#e9d3a7", "white": "#ffffff", "muted": "#67645e"},
+    "radii": {"small": "12px", "medium": "28px", "large": "38px", "pill": "999px"},
+    "shadows": {"small": "0 12px 24px rgba(18,18,18,.08)", "medium": "0 32px 80px rgba(24,20,16,.14)"},
+    "container": "min(1340px, calc(100% - 64px))",
+    "section_spacing": {"desktop": "118px", "tablet": "86px", "mobile": "72px"},
+    "breakpoints": [1120, 860, 560]
+  },
+  "typography_hierarchy": {
+    "hero_h1": "clamp(62px, 6vw, 100px), 800, line-height .95",
+    "section_h2": "clamp(48px, 5.5vw, 78px)",
+    "body": "16px/1.5",
+    "lead": "20px/1.55",
+    "eyebrow": "10px, 800, uppercase, .15em tracking"
+  },
+  "allowed_components": ["Layout", "Header", "Footer", "BrandMark", "CatLogo", "CookieConsent", "SectionReveal", "button", "text-link", "shell", "section", "section-heading", "service-card", "case", "process-board", "contact-form", "contact-card"],
+  "allowed_layouts": ["shell", "section", "hero-grid", "section-heading", "services-grid", "case", "process-board", "team-grid", "contact-grid"],
+  "responsive_rules": ["Use existing 1120px, 860px, and 560px breakpoints", "Collapse major two-column layouts to one column at 860px", "Use existing shell widths", "Preserve reduced-motion behavior"],
+  "prohibited_arbitrary_styling": ["new_font", "new_brand_color", "global_typography_change", "header_change", "footer_change", "new_button_style", "new_radius_system", "arbitrary_shadow", "container_width_change", "global_spacing_change", "navigation_change"],
+  "generation_workflow": ["PROPOSED", "CONTENT_APPROVED", "GENERATED_PREVIEW", "VISUAL_REVIEW", "SEO_REVIEW", "APPROVED_FOR_MERGE"],
+  "required_reviews": ["frontend_build", "desktop_screenshot", "mobile_screenshot", "visual_consistency", "seo_metadata", "internal_linking", "sitemap", "human_approval"],
+  "missing_primitive_status": "DESIGN_EXTENSION_REQUIRED"
+}

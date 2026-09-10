@@ -45,3 +45,8 @@
 - Добавлены MarketScan, MarketQuery, MarketEvidence и MarketIntelligence с scan-scoped versioning, semantic deduplication и сохранением direct/association provenance.
 - Dynamic Site Inventory теперь повторяемо парсит актуальные service sections из `src/content/site.ts`, а не хранит их hardcoded в API.
 - Market Scan 1 использовал 5 Wordstat requests: 176 evidence rows, 165 unique queries, 11 GigaChat batches, 4 guarded opportunities. Исторический 44-row experiment не изменён.
+- Добавлены детерминированные `service_line` и `platform` без изменения top-level taxonomy.
+- Scan 1 пересобран как отдельный `SCAN_1_PROPOSED_V2`; исторические opportunities сохранены, внешние Wordstat/GigaChat запросы не выполнялись.
+- Добавлены `StrategicHypothesis`, advisory-направление Яндекс KIT и неисполненный seed pack для будущего controlled scan.
+- Из текущего frontend извлечены JSON Site Design Contract и human-readable Design System; добавлены generation guardrails и `DESIGN_EXTENSION_REQUIRED`.
+- `/ai` показывает service line/platform и Strategic Directions отдельно от подтверждённых market opportunities.

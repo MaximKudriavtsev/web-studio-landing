@@ -4,6 +4,16 @@ Frontend остаётся статическим React SPA. AI Growth Engine —
 
 Scheduler запускается вместе с backend, но на FOUNDATION не содержит внешних jobs. Frontend обращается к backend по `VITE_AI_API_URL` (по умолчанию `http://localhost:8000`).
 
+## Service-Line Intelligence
+
+Top-level taxonomy отвечает за semantic domain. Пост-LLM router в `intelligence/service_routing.py` независимо выводит `service_line` и `platform` из phrase и сохранённого cluster. V2 opportunity build агрегирует `cluster + service_line + relevant platform`, сохраняет dimensions в intelligence payload и пишет новую build version, не изменяя историческую.
+
+`StrategicHypothesis` — отдельная advisory entity. Она не участвует в Opportunity Engine до появления evidence. Seed registries также не запускают collector автоматически.
+
+## Design Contract boundary
+
+`project/design/SITE_DESIGN_CONTRACT.json` задаёт разрешённые tokens, components, layouts и проверки. Generation gate разрешает существующие primitives, отклоняет произвольные global style changes и возвращает `DESIGN_EXTENSION_REQUIRED` для отсутствующего компонента. Pipeline заканчивается `APPROVED_FOR_MERGE`; publish не автоматизирован.
+
 ## Wordstat Phase 1
 
 `collectors/wordstat.py` инкапсулирует официальный REST API, authentication, timeout, retry, request budget и преобразование ответов в Pydantic schemas. API layer инициирует только явные запросы. GetTop сохраняет отдельные result/association записи в `RawSearchQuery`; request provenance остаётся в `source_payload`. GetDynamics раскладывает каждый период в строку `SearchDemandPoint`, пригодную для последующей SQL-аналитики.

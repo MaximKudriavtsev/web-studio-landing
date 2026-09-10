@@ -27,7 +27,8 @@ type IntelligenceData = {
   raw_queries: number; analyzed: number; ignored: number; watch: number
   opportunity_candidates: number; clusters: number; items: IntelligenceItem[]
 }
-type GrowthOpportunity = { id:number; title:string; priority:string; opportunity_type:string; site_coverage:string; recommended_action:string; rationale:string; evidence_count:number; total_frequency_evidence:number; strongest_queries:{phrase:string;frequency:number}[] }
+type GrowthOpportunity = { id:number; title:string; priority:string; opportunity_type:string; service_line:string; platform:string; site_coverage:string; recommended_action:string; rationale:string; evidence_count:number; total_frequency_evidence:number; strongest_queries:{phrase:string;frequency:number}[] }
+type StrategicHypothesis = { id:number; title:string; service_line:string; platform:string; evidence_status:string; status:string }
 
 const apiUrl = (import.meta.env.VITE_AI_API_URL || 'http://localhost:8000').replace(/\/$/, '')
 
@@ -46,6 +47,7 @@ export const AiPage = () => {
   const [dispositionFilter, setDispositionFilter] = useState('')
   const [clusterFilter, setClusterFilter] = useState('')
   const [opportunities, setOpportunities] = useState<GrowthOpportunity[]>([])
+  const [strategicDirections, setStrategicDirections] = useState<StrategicHypothesis[]>([])
 
   const wordstat = integrations.find((integration) => integration.name === 'Wordstat')
   const gigachat = integrations.find((integration) => integration.name === 'GigaChat')
@@ -154,6 +156,7 @@ export const AiPage = () => {
     if (backendOnline) {
       void loadIntelligence()
       void fetch(`${apiUrl}/api/opportunities`).then((response) => response.ok ? response.json() : null).then((data) => data && setOpportunities(data.items))
+      void fetch(`${apiUrl}/api/strategy/hypotheses`).then((response) => response.ok ? response.json() : null).then((data) => data && setStrategicDirections(data))
     }
   }, [backendOnline, loadIntelligence])
 
@@ -278,9 +281,20 @@ export const AiPage = () => {
           <div className="ai-status-grid">
             {opportunities.map((item) => <article className="ai-status-card" key={item.id}>
               <span>{item.priority} · {item.opportunity_type}</span><strong>{item.title}</strong>
-              <p>{item.rationale}</p><p>Coverage: {item.site_coverage} · Evidence: {item.evidence_count} · Frequency: {item.total_frequency_evidence.toLocaleString('ru-RU')}</p>
+              <p>{item.service_line} · {item.platform}</p><p>{item.rationale}</p><p>Coverage: {item.site_coverage} · Evidence: {item.evidence_count} · Frequency: {item.total_frequency_evidence.toLocaleString('ru-RU')}</p>
               <p>Рекомендация: <strong>{item.recommended_action}</strong></p>
               <ul>{item.strongest_queries.map((query) => <li key={query.phrase}>{query.phrase} — {query.frequency?.toLocaleString('ru-RU')}</li>)}</ul>
+            </article>)}
+          </div>
+        </section>
+
+        <section className="ai-intelligence">
+          <div className="ai-wordstat-heading"><div><p className="eyebrow eyebrow-dark">Advisory hypotheses</p><h2>Strategic Directions</h2></div><strong>RESEARCH</strong></div>
+          <p>Стратегические направления отделены от подтверждённых market opportunities и требуют отдельного исследования.</p>
+          <div className="ai-status-grid">
+            {strategicDirections.map((item) => <article className="ai-status-card" key={item.id}>
+              <span>{item.service_line} · {item.platform}</span><strong>{item.title}</strong>
+              <p>Evidence: {item.evidence_status}</p><p>Статус: <strong>{item.status}</strong></p>
             </article>)}
           </div>
         </section>

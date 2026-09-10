@@ -28,9 +28,13 @@
 
 Market Scan V1 завершён: scan-scoped collection, production V2 intelligence, dynamic repository inventory и guarded opportunities. Content generation остаётся запрещённой до отдельного approval.
 
-## Phase 5 — Approval UI
+## Phase 5 — Service-Line Intelligence and Design Contract
 
-`/ai`: opportunities, actions, preview, approve/reject.
+Статус: завершено. Добавлены независимые service line/platform, версионный rebuild Scan 1, strategic hypotheses, Yandex KIT seed registry и дизайн-контракт. `/ai` показывает strategic directions отдельно от market opportunities.
+
+## Phase 5.1 — Approval UI
+
+Opportunities, actions, generated preview и approve/reject после отдельного решения владельца.
 
 ## Phase 6 — Publication
 
