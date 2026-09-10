@@ -5,6 +5,7 @@ from sqlalchemy.orm import sessionmaker
 from app.db import Base, get_db
 from app.main import app
 from app.models import Opportunity, RawSearchQuery, SearchIntentCalibration
+from app.inventory import build_site_inventory
 
 def test_v2_aggregation_coverage_idempotency_and_evidence_preservation(tmp_path):
     engine=create_engine(f"sqlite:///{(tmp_path/'opps.db').as_posix()}")
@@ -37,3 +38,10 @@ def test_v2_aggregation_coverage_idempotency_and_evidence_preservation(tmp_path)
             assert db.scalar(select(func.count()).select_from(SearchIntentCalibration))==5
     finally:
         app.dependency_overrides.clear(); engine.dispose()
+
+def test_dynamic_inventory_reflects_content_change(tmp_path):
+    content="""services: [{ id: 'sites', title: 'Сайты для бизнеса', text: 'Первая версия', features: ['Лендинги']\n  },], cases: ["""
+    path=tmp_path/"site.ts"; path.write_text(content,encoding="utf-8")
+    assert build_site_inventory(path)[0].description=="Первая версия"
+    path.write_text(content.replace("Первая версия","Обновлённая версия"),encoding="utf-8")
+    assert build_site_inventory(path)[0].description=="Обновлённая версия"

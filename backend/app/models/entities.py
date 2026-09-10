@@ -92,6 +92,55 @@ class Opportunity(TimestampMixin, Base):
     evidence: Mapped[dict | None] = mapped_column(JSON)
 
 
+class MarketScan(TimestampMixin, Base):
+    __tablename__ = "market_scans"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    status: Mapped[str] = mapped_column(String(30), index=True)
+    started_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    seed_count: Mapped[int] = mapped_column(Integer, default=0)
+    wordstat_request_count: Mapped[int] = mapped_column(Integer, default=0)
+    raw_evidence_count: Mapped[int] = mapped_column(Integer, default=0)
+    unique_query_count: Mapped[int] = mapped_column(Integer, default=0)
+    intelligence_count: Mapped[int] = mapped_column(Integer, default=0)
+    opportunity_count: Mapped[int] = mapped_column(Integer, default=0)
+    model: Mapped[str] = mapped_column(String(100))
+    notes: Mapped[str | None] = mapped_column(Text)
+
+
+class MarketQuery(TimestampMixin, Base):
+    __tablename__ = "market_queries"
+    __table_args__ = (UniqueConstraint("scan_id", "normalized_phrase", name="uq_market_query_scan_phrase"),)
+    id: Mapped[int] = mapped_column(primary_key=True)
+    scan_id: Mapped[int] = mapped_column(ForeignKey("market_scans.id"), index=True)
+    phrase: Mapped[str] = mapped_column(String(500))
+    normalized_phrase: Mapped[str] = mapped_column(String(500))
+
+
+class MarketEvidence(TimestampMixin, Base):
+    __tablename__ = "market_evidence"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    scan_id: Mapped[int] = mapped_column(ForeignKey("market_scans.id"), index=True)
+    market_query_id: Mapped[int] = mapped_column(ForeignKey("market_queries.id"), index=True)
+    seed: Mapped[str] = mapped_column(String(500), index=True)
+    source_type: Mapped[str] = mapped_column(String(30), index=True)
+    phrase: Mapped[str] = mapped_column(String(500))
+    demand: Mapped[int] = mapped_column(Integer)
+    collected_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    raw_payload: Mapped[dict] = mapped_column(JSON)
+
+
+class MarketIntelligence(TimestampMixin, Base):
+    __tablename__ = "market_intelligence"
+    __table_args__ = (UniqueConstraint("market_query_id", "version", name="uq_market_intelligence_query_version"),)
+    id: Mapped[int] = mapped_column(primary_key=True)
+    scan_id: Mapped[int] = mapped_column(ForeignKey("market_scans.id"), index=True)
+    market_query_id: Mapped[int] = mapped_column(ForeignKey("market_queries.id"), index=True)
+    version: Mapped[str] = mapped_column(String(20))
+    model: Mapped[str] = mapped_column(String(100))
+    payload: Mapped[dict] = mapped_column(JSON)
+
+
 class AIAction(TimestampMixin, Base):
     __tablename__ = "ai_actions"
     id: Mapped[int] = mapped_column(primary_key=True)

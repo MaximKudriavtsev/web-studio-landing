@@ -26,7 +26,7 @@
 
 ## Phase 4 — Content Actions
 
-Article, service, landing и FAQ drafts; home promotion; internal links.
+Market Scan V1 завершён: scan-scoped collection, production V2 intelligence, dynamic repository inventory и guarded opportunities. Content generation остаётся запрещённой до отдельного approval.
 
 ## Phase 5 — Approval UI
 

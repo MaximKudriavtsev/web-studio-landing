@@ -37,3 +37,9 @@ Disposition вычисляется после routing. Opportunity требуе�
 Site inventory строится без crawler из routes и `src/content/site.ts`. Четыре service sections на `/#services` покрывают business websites, web applications, UX/UI и redesign; отсутствие отдельных service pages означает PARTIAL coverage.
 
 Opportunity builder читает только V2 non-IGNORE rows, агрегирует evidence по стабильному cluster, сопоставляет coverage и сохраняет `PROPOSED_V1` идемпотентно. Priority — HIGH/MEDIUM/LOW с причинами; high frequency без commercial evidence не даёт HIGH. Engine остаётся advisory/approval-only.
+
+## Phase 4 Market Scan
+
+MarketScan ограничивает один collection run существующим Wordstat budget (не более 5). MarketQuery дедуплицирует нормализованную phrase внутри scan, сохраняя каждое seed/source occurrence в MarketEvidence. Production V2 intelligence обрабатывает любое число новых query batch-wise и идемпотентно, не касаясь calibration history.
+
+Scan Opportunity Build учитывает direct/association split и актуальный inventory из deterministic parser `src/content/site.ts`. `total_frequency_evidence` — сумма потенциально пересекающихся signals, не market size, demand или unique users. Association-only evidence не создаёт HIGH; один BUY_SERVICE evidence получает только WATCH.

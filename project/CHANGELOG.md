@@ -42,3 +42,6 @@
 - Добавлены repository-based SitePageInventory, idempotent `POST /api/opportunities/build`, фильтруемый `GET /api/opportunities` и `GET /api/site-inventory`.
 - Первый V2-only Opportunity Build создал 5 агрегированных advisory opportunities; IGNORE не создаёт активных записей, исходные evidence не изменяются.
 - Технический `/ai` дополнен блоком Growth Opportunities с priority, coverage, evidence, action и явным sample-scope disclaimer.
+- Добавлены MarketScan, MarketQuery, MarketEvidence и MarketIntelligence с scan-scoped versioning, semantic deduplication и сохранением direct/association provenance.
+- Dynamic Site Inventory теперь повторяемо парсит актуальные service sections из `src/content/site.ts`, а не хранит их hardcoded в API.
+- Market Scan 1 использовал 5 Wordstat requests: 176 evidence rows, 165 unique queries, 11 GigaChat batches, 4 guarded opportunities. Исторический 44-row experiment не изменён.

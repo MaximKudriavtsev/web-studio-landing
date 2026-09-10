@@ -51,3 +51,7 @@ GigaChat V2 определяет только primary goal и semantic attribute
 ## Decision 013 — Opportunities только из V2 и repository inventory
 
 Opportunity Engine агрегирует только non-IGNORE V2 evidence и сопоставляет его со статическим inventory, извлечённым из текущего repository без crawler. Build идемпотентен по `PROPOSED_V1`, priority дискретна и объяснима, а вывод всегда ограничен формулировкой «opportunities detected in the current search-demand sample».
+
+## Decision 014 — Scan-scoped market evidence
+
+Каждый Market Scan имеет собственный ID. Phrase дедуплицируется внутри scan в MarketQuery, а каждое появление из seed/result/association сохраняется отдельным MarketEvidence. Production intelligence не имеет exact-44 ограничения и пишет versioned MarketIntelligence. Opportunities не смешивают scans; association не может самостоятельно дать HIGH, а одиночный BUY_SERVICE не создаёт service page.
