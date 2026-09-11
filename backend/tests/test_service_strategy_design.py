@@ -1,5 +1,6 @@
 import json
 from datetime import UTC, datetime
+from types import SimpleNamespace
 
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine, func, select
@@ -10,6 +11,8 @@ from app.design_guardrails import CONTRACT_PATH, validate_generation_request
 from app.intelligence.service_routing import Platform, ServiceLine, route_platform, route_service_line
 from app.main import app
 from app.models import MarketEvidence, MarketIntelligence, MarketQuery, MarketScan, Opportunity, StrategicHypothesis
+from app.api.strategy import MODEL, build_strategic_decision
+from app.strategy import YANDEX_KIT_SEEDS
 
 
 def test_service_line_and_platform_routing():
@@ -21,6 +24,9 @@ def test_service_line_and_platform_routing():
     assert route_service_line("редизайн сайта", "WEB_DESIGN_UX") == ServiceLine.REDESIGN
     assert route_platform("создание интернет магазина на яндекс кит") == Platform.YANDEX_KIT
     assert route_service_line("создание интернет магазина на яндекс кит", "WEB_DEVELOPMENT_SERVICES") == ServiceLine.ECOMMERCE
+    assert route_service_line("как настроить яндекс кит", "INFORMATIONAL_WEB_DEV") == ServiceLine.ECOMMERCE
+    assert MODEL == "GigaChat-3-Ultra"
+    assert YANDEX_KIT_SEEDS[:5] == ["яндекс кит", "яндекс kit", "создание магазина яндекс кит", "настройка яндекс кит", "seo яндекс кит"]
 
 
 def test_design_contract_and_extension_guardrail():
@@ -60,3 +66,39 @@ def test_v2_split_is_versioned_and_hypothesis_is_not_opportunity(tmp_path):
         assert hypotheses.json()[0]["status"]=="RESEARCH_REQUIRED"
     finally:
         app.dependency_overrides.clear();engine.dispose()
+
+
+def _strategic_row(row_id, goal, *, phrase="настройка магазина яндекс кит", disposition="WATCH", relevance="MEDIUM", commerciality="LOW", ambiguity="LOW"):
+    query = SimpleNamespace(id=row_id, phrase=phrase)
+    intel = SimpleNamespace(payload={"platform":"YANDEX_KIT", "service_line":"ECOMMERCE", "primary_goal":goal,
+                                     "disposition":disposition, "business_relevance":relevance,
+                                     "commerciality":commerciality, "ambiguity":ambiguity})
+    return query, intel
+
+
+def test_strategic_decision_requires_multiple_direct_commercial_signals():
+    rows = [_strategic_row(1, "BUY_SERVICE", disposition="OPPORTUNITY_CANDIDATE", relevance="HIGH", commerciality="HIGH")]
+    evidence = [SimpleNamespace(market_query_id=1, source_type="result")]
+    assert build_strategic_decision(rows, evidence)["decision"] == "WATCH"
+
+
+def test_informational_kit_phrase_is_not_promoted_by_relevance_alone():
+    rows = [_strategic_row(1, "LEARN", phrase="яндекс кит интернет магазин", relevance="HIGH", commerciality="MEDIUM")]
+    evidence = [SimpleNamespace(market_query_id=1, source_type="result")]
+    result = build_strategic_decision(rows, evidence)
+    assert result["commercial_query_ids"] == []
+    assert result["decision"] == "WATCH"
+
+
+def test_strategic_both_requires_commercial_and_informational_evidence():
+    rows = [
+        _strategic_row(1, "BUY_SERVICE", disposition="OPPORTUNITY_CANDIDATE", relevance="HIGH", commerciality="HIGH"),
+        _strategic_row(2, "BUY_SERVICE", disposition="OPPORTUNITY_CANDIDATE", relevance="HIGH", commerciality="MEDIUM"),
+        _strategic_row(3, "LEARN", phrase="как работает яндекс кит"),
+        _strategic_row(4, "LEARN", phrase="возможности яндекс кит"),
+    ]
+    evidence = [SimpleNamespace(market_query_id=index, source_type="result") for index in range(1, 5)]
+    result = build_strategic_decision(rows, evidence)
+    assert result["decision"] == "BOTH"
+    assert result["evidence_status"] == "VALIDATED_FOR_BOTH"
+    assert result["serp_status"] == "SERP_RESEARCH_REQUIRED"

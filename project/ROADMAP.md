@@ -36,14 +36,18 @@ Market Scan V1 завершён: scan-scoped collection, production V2 intellige
 
 Opportunities, actions, generated preview и approve/reject после отдельного решения владельца.
 
-## Phase 6 — Publication
+## Phase 6 — Yandex KIT Strategic Market Scan
+
+Статус: завершено. Результат — `CREATE_ARTICLE`, но content generation и SERP research требуют отдельных approvals.
+
+## Phase 7 — Publication
 
 Только после отдельного решения владельца.
 
-## Phase 7 — Feedback Loop
+## Phase 8 — Feedback Loop
 
 Webmaster, Metrika, measurement и AI evaluation результатов.
 
-## Phase 8 — Autopilot
+## Phase 9 — Autopilot
 
 Только после успешного тестирования approval mode.

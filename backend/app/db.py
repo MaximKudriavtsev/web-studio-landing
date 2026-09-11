@@ -28,6 +28,29 @@ def init_db() -> None:
     Base.metadata.create_all(bind=engine)
     _add_search_intent_columns()
     _migrate_calibration_versioning()
+    _add_strategic_scan_columns()
+
+
+def _add_strategic_scan_columns() -> None:
+    """Add Phase 6 metadata without rewriting historical local scans."""
+    if not database_url.startswith("sqlite"):
+        return
+    inspector = inspect(engine)
+    additions = {
+        "market_scans": {
+            "scan_type": "VARCHAR(30) DEFAULT 'BROAD'",
+            "hypothesis_id": "INTEGER",
+            "service_line": "VARCHAR(40)",
+            "platform": "VARCHAR(40)",
+        },
+        "market_evidence": {"hypothesis_id": "INTEGER"},
+    }
+    with engine.begin() as connection:
+        for table, columns in additions.items():
+            existing = {column["name"] for column in inspector.get_columns(table)}
+            for name, sql_type in columns.items():
+                if name not in existing:
+                    connection.execute(text(f"ALTER TABLE {table} ADD COLUMN {name} {sql_type}"))
 
 
 def _add_search_intent_columns() -> None:

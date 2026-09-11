@@ -106,6 +106,10 @@ class MarketScan(TimestampMixin, Base):
     opportunity_count: Mapped[int] = mapped_column(Integer, default=0)
     model: Mapped[str] = mapped_column(String(100))
     notes: Mapped[str | None] = mapped_column(Text)
+    scan_type: Mapped[str] = mapped_column(String(30), default="BROAD", index=True)
+    hypothesis_id: Mapped[int | None] = mapped_column(ForeignKey("strategic_hypotheses.id"), index=True)
+    service_line: Mapped[str | None] = mapped_column(String(40), index=True)
+    platform: Mapped[str | None] = mapped_column(String(40), index=True)
 
 
 class MarketQuery(TimestampMixin, Base):
@@ -128,6 +132,7 @@ class MarketEvidence(TimestampMixin, Base):
     demand: Mapped[int] = mapped_column(Integer)
     collected_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     raw_payload: Mapped[dict] = mapped_column(JSON)
+    hypothesis_id: Mapped[int | None] = mapped_column(ForeignKey("strategic_hypotheses.id"), index=True)
 
 
 class MarketIntelligence(TimestampMixin, Base):
@@ -151,6 +156,19 @@ class StrategicHypothesis(TimestampMixin, Base):
     status: Mapped[str] = mapped_column(String(40), index=True)
     rationale: Mapped[str] = mapped_column(Text)
     evidence_status: Mapped[str] = mapped_column(String(40), index=True)
+
+
+class StrategicConclusion(TimestampMixin, Base):
+    __tablename__ = "strategic_conclusions"
+    __table_args__ = (UniqueConstraint("scan_id", name="uq_strategic_conclusion_scan"),)
+    id: Mapped[int] = mapped_column(primary_key=True)
+    scan_id: Mapped[int] = mapped_column(ForeignKey("market_scans.id"), index=True)
+    hypothesis_id: Mapped[int] = mapped_column(ForeignKey("strategic_hypotheses.id"), index=True)
+    decision: Mapped[str] = mapped_column(String(40), index=True)
+    evidence_status: Mapped[str] = mapped_column(String(50), index=True)
+    serp_status: Mapped[str] = mapped_column(String(40))
+    rationale: Mapped[str] = mapped_column(Text)
+    metrics: Mapped[dict] = mapped_column(JSON)
 
 
 class AIAction(TimestampMixin, Base):

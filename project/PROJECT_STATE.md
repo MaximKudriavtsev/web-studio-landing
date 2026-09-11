@@ -27,6 +27,8 @@
 - Phase 4 Market Scan 1 выполнил 5/5 Wordstat GetTop: 176 evidence rows, 165 unique queries, 11 GigaChat batches и 4 scan-scoped opportunities. ORIGINAL/V1/V2 baseline сохранён 44/44/44.
 - Phase 5 детерминированно разложила сохранённые 165 запросов по service line и platform без новых внешних запросов. Исторический `SCAN_1_PROPOSED` сохранён; новый `SCAN_1_PROPOSED_V2` содержит 15 раздельных advisory groups, включая Corporate Website, Ecommerce, Web Application и Personal Account.
 - Гипотеза Яндекс KIT хранится отдельно как `STRATEGIC_DIRECTION / RESEARCH_REQUIRED / NOT_RESEARCHED` и не является market opportunity.
+- Phase 6 Strategic Scan 2 исследовал Yandex KIT пятью разрешёнными GetTop-запросами: 112 evidence rows, 99 unique queries, 50 direct и 62 associations. GigaChat-3-Ultra обработал 99/99 строк в 7 batches.
+- Strategic conclusion: `CREATE_ARTICLE / VALIDATED_FOR_CONTENT_RESEARCH / SERP_RESEARCH_REQUIRED`. Обнаружено 16 информационных signals и 0 достаточных commercial service-action signals; service page не обоснована.
 - Зафиксирован машиночитаемый Site Design Contract и approval pipeline; генерация marketing pages по-прежнему запрещена.
 - Частотности Wordstat трактуются только как пересекающиеся evidence signals. Scan выявил сильный шум associations (`разработка`, `личное дело`, `создание это`), поэтому informational opportunity остаётся MEDIUM, а association-only web design — LOW/WATCH.
 

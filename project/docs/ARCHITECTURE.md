@@ -10,6 +10,8 @@ Top-level taxonomy отвечает за semantic domain. Пост-LLM router в
 
 `StrategicHypothesis` — отдельная advisory entity. Она не участвует в Opportunity Engine до появления evidence. Seed registries также не запускают collector автоматически.
 
+Strategic scan хранит `scan_type`, `hypothesis_id`, `service_line` и `platform`; каждое evidence сохраняет `hypothesis_id`. `StrategicConclusion` уникален по scan и строится детерминированно только после полного V2 analysis. Association не считается direct evidence. Один commercial query не разрешает service page, а informational/навигационный шум не становится commercial signal только из-за общей relevance.
+
 ## Design Contract boundary
 
 `project/design/SITE_DESIGN_CONTRACT.json` задаёт разрешённые tokens, components, layouts и проверки. Generation gate разрешает существующие primitives, отклоняет произвольные global style changes и возвращает `DESIGN_EXTENSION_REQUIRED` для отсутствующего компонента. Pipeline заканчивается `APPROVED_FOR_MERGE`; publish не автоматизирован.

@@ -25,6 +25,9 @@ class Platform(str, Enum):
 
 def route_service_line(phrase: str, cluster: str) -> ServiceLine:
     text = " ".join(phrase.casefold().replace("ё", "е").split())
+    is_yandex_kit = "яндекс кит" in text or "yandex kit" in text
+    if is_yandex_kit and any(term in text for term in ("создан", "настро", "запуск", "seo", "сео", "продвиж", "магазин")):
+        return ServiceLine.ECOMMERCE
     if any(term in text for term in ("личн кабинет", "личного кабинет", "личный кабинет")):
         return ServiceLine.PERSONAL_ACCOUNT
     if any(term in text for term in ("интернет магазин", "интернет-магазин", "ecommerce", "e-commerce")):

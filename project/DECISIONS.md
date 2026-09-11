@@ -67,3 +67,11 @@ Opportunity Engine агрегирует только non-IGNORE V2 evidence и �
 ## Decision 017 — Генерация подчиняется Site Design Contract
 
 Страница может собираться только из текущих tokens/components/layouts. Запрос недостающего primitive возвращает `DESIGN_EXTENSION_REQUIRED`; новые fonts, brand colors, button/radius/shadow systems, Header/Footer, navigation, container width и global spacing запрещены без approval.
+
+## Decision 018 — Strategic scans и conclusions изолированы
+
+Strategic Market Scan имеет `scan_type=STRATEGIC`, обязательную связь с hypothesis, service line и platform. Evidence также хранит hypothesis provenance. Conclusion не создаёт обычную opportunity или страницу: он выдаёт только `CREATE_SERVICE_PAGE`, `CREATE_ARTICLE`, `BOTH`, `WATCH` либо `DO_NOTHING` и обновляет advisory evidence status гипотезы.
+
+## Decision 019 — Commercial strategic signal требует действия
+
+HIGH relevance и MEDIUM/HIGH commerciality недостаточны для service recommendation, если запрос остаётся `LEARN/WATCH`. Помимо direct Yandex KIT и ECOMMERCE context требуется `BUY_SERVICE` либо явный service-action marker: создание, настройка, запуск, SEO, продвижение или разработка. Это защищает от превращения общего интереса к платформе в ложную service opportunity.

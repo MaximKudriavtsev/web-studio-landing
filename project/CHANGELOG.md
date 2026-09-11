@@ -50,3 +50,6 @@
 - Добавлены `StrategicHypothesis`, advisory-направление Яндекс KIT и неисполненный seed pack для будущего controlled scan.
 - Из текущего frontend извлечены JSON Site Design Contract и human-readable Design System; добавлены generation guardrails и `DESIGN_EXTENSION_REQUIRED`.
 - `/ai` показывает service line/platform и Strategic Directions отдельно от подтверждённых market opportunities.
+- Добавлен отдельный strategic scan pipeline со связью hypothesis → scan → evidence → intelligence → conclusion и ограничением Wordstat budget до 5.
+- Yandex KIT Strategic Scan 2 собрал 112 evidence rows / 99 unique queries и обработал 99/99 строк на GigaChat-3-Ultra в 7 batches.
+- Итог Yandex KIT: `CREATE_ARTICLE`, `VALIDATED_FOR_CONTENT_RESEARCH`, `SERP_RESEARCH_REQUIRED`; сайт, routes, sitemap и SEO metadata не изменялись.
